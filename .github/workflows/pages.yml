@@ -1,0 +1,51 @@
+name: Publier Ma Gestion Pro
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Vérifier les fichiers et les comptes locaux
+        run: |
+          node --check app.js
+          node --check storage.mjs
+          node --test tests/local.test.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - name: Préparer les fichiers publics
+        run: |
+          mkdir public
+          touch public/.nojekyll
+          cp index.html app.js style.css model.mjs storage.mjs public/
+          cp -R assets public/assets
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Publier
+        id: deployment
+        uses: actions/deploy-pages@v4
