@@ -1,10 +1,10 @@
-import {empty,validate,change,visible} from './model.mjs';
+import {empty,validate,change,visible,visibleRevenues} from './model.mjs';
 let directory=null;
 const filename='ma-gestion-pro.json';
 async function read(){try{const h=await directory.getFileHandle(filename);const f=await h.getFile();if(f.size>20000000)throw Error('Fichier trop volumineux.');return validate(JSON.parse(await f.text()));}catch(e){if(e.name==='NotFoundError')return empty();throw e;}}
 async function write(handle,data){const stream=await handle.createWritable();try{await stream.write(JSON.stringify(data,null,2));await stream.close();}catch(e){try{await stream.abort();}catch{}throw e;}}
 async function snapshot(data){const dir=await directory.getDirectoryHandle('sauvegardes',{create:true});const name=`comptes-${new Date().toISOString().replace(/[:.]/g,'-')}-${crypto.randomUUID()}.json`;await write(await dir.getFileHandle(name,{create:true}),data);return name;}
-function state(d){return {...d,expenses:visible(d),dataPath:directory?`${directory.name}/${filename}`:'Aucun dossier ouvert',backupFolder:directory?`${directory.name}/sauvegardes`:null,connected:!!directory};}
+function state(d){return {...d,expenses:visible(d),revenues:visibleRevenues(d),dataPath:directory?`${directory.name}/${filename}`:'Aucun dossier ouvert',backupFolder:directory?`${directory.name}/sauvegardes`:null,connected:!!directory};}
 async function locked(fn){if(!directory)throw Error('Choisis d’abord ton dossier dans Réglages.');if(!navigator.locks)throw Error('Ce navigateur ne permet pas de sécuriser les écritures.');return navigator.locks.request('ma-gestion-pro-local-write',fn);}
 export async function run(action,p){
  if(action==='state')return directory?state(await read()):state(empty());

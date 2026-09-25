@@ -6,10 +6,11 @@ import path from 'node:path';
 import {empty,change,validate} from '../model.mjs';
 const setup={day:'2026-09-01',balance:'1 000,00',next:'100'};
 const expense={day:'2026-09-15',amount:'42,50',vat:'7,08',label:'Test',category:'Restaurant',payment:'Carte pro',notes:''};
+const revenue={day:'2026-09-20',amount:'12000,00',vat:'2000,00',label:'Commission test',category:'Commission immobilière',notes:''};
 test('Dépenses : montants, historique, références et annulation',()=>{
  let d=change(empty(),'setup',setup);d=change(d,'save',expense);assert.equal(d.expenses[0].cents,4250);assert.equal(d.expenses[0].ref,100);assert.equal(d.next,101);
  d=change(d,'save',{...expense,day:'2026-08-30',ref:'99'});assert.equal(d.expenses[1].historical,true);assert.equal(d.next,101);
-d=change(d,'remove',1);assert.equal(d.expenses[0].cancelled,true);assert.equal(d.next,100);d=change(d,'save',expense);assert.equal(d.expenses[2].ref,100);
+ d=change(d,'remove',1);assert.equal(d.expenses[0].cancelled,true);assert.equal(d.next,100);d=change(d,'save',expense);assert.equal(d.expenses[2].ref,100);
  assert.throws(()=>change(d,'save',{...expense,day:'2026-08-30',ref:'99'}));
  assert.throws(()=>change(d,'save',{...expense,day:'2026-02-30'}));
  assert.throws(()=>change(d,'save',{...expense,amount:'1.001'}));
@@ -35,4 +36,12 @@ test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans fa
  selection=path.join(root,'invalid.json');await fs.writeFile(selection,'{}');await assert.rejects(b.run('restore'));assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
  await b.run('remove',1);assert.equal((await b.run('state')).expenses.length,0);assert.equal((await b.run('state')).next,100);
  }finally{await fs.rm(root,{recursive:true,force:true});}
+});
+test('Recettes : création, modification, suppression et validation',()=>{
+ let d=change(empty(),'setup',setup);d=change(d,'saveRevenue',revenue);assert.equal(d.revenues[0].cents,1200000);assert.equal(d.revenues[0].vat_cents,200000);assert.equal(d.revenues[0].cancelled,false);
+ d=change(d,'saveRevenue',{...revenue,id:1,amount:'13000,00',vat:'2166,67'});assert.equal(d.revenues[0].cents,1300000);assert.equal(d.revenues[0].vat_cents,216667);
+ d=change(d,'removeRevenue',1);assert.equal(d.revenues[0].cancelled,true);
+ assert.throws(()=>change(d,'saveRevenue',{...revenue,amount:'0'}));
+ assert.throws(()=>change(d,'saveRevenue',{...revenue,label:''}));
+ assert.throws(()=>change(d,'saveRevenue',{...revenue,vat:'14000'}));
 });
