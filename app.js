@@ -1,3 +1,4 @@
+import {calcCommission} from './model.mjs';
 'use strict';
 const $=s=>document.querySelector(s),fmt=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});let state=null,toastTimer;
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -17,6 +18,9 @@ function filterList(){if(!state)return;const q=$('#search').value.toLocaleLowerC
 $('#search').addEventListener('input',filterList);
 function filterRevenueList(){if(!state)return;const q=$('#revenue-search').value.toLocaleLowerCase('fr');list('#revenue-list',state.revenues.filter(r=>`${r.label} ${r.category}`.toLocaleLowerCase('fr').includes(q)),true,'revenue');}
 $('#revenue-search').addEventListener('input',filterRevenueList);
+const cents=v=>fmt.format(v/100);
+function resultRow(label,value,highlight=false){const div=document.createElement('div');div.className='result-row'+(highlight?' highlight':'');const a=document.createElement('span'),b=document.createElement('strong');a.textContent=label;b.textContent=typeof value==='number'?cents(value):value;div.append(a,b);return div;}
+$('#commission-form').onsubmit=e=>{e.preventDefault();const host=$('#commission-result');host.replaceChildren();try{const r=calcCommission(Object.fromEntries(new FormData(e.target)));host.append(resultRow('Honoraires agence HT',r.agencyHt),resultRow('Ta part agence HT',r.personalAgencyHt),resultRow('Cumul HT après vente',r.nextHt),resultRow('Commission conseiller HT',r.advisorHt,true),resultRow('TVA collectée estimée',r.advisorVat),resultRow('Commission conseiller TTC',r.advisorTtc),resultRow('URSSAF estimée 25,6 %',r.urssaf),resultRow('Net estimé après TVA et URSSAF',r.net,true));}catch(err){notify(err.message,true);}};
 const form=$('#expense-form');function resetForm(){form.reset();form.elements.id.value='';form.elements.day.value=today();form.elements.vat.value='0';$('#form-heading').textContent='Ajouter une dépense';$('#save-expense').textContent='Enregistrer la dépense';$('#cancel-edit').hidden=true;historyHint();}
 function historyHint(){const historical=state?.setup&&form.elements.day.value<state.setup.day;$('#history-field').hidden=!historical||!!form.elements.id.value;$('#historical-note').textContent=historical?'Historique : cette dépense comptera dans les statistiques, sans modifier le solde initial.':state?.setup?'La référence sera attribuée automatiquement.':'Commence par enregistrer ton point de départ dans Réglages.';}
 form.elements.day.addEventListener('change',historyHint);$('#cancel-edit').onclick=resetForm;

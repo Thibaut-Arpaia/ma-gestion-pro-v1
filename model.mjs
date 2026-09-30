@@ -1,5 +1,17 @@
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
 export function money(v){if(!['string','number'].includes(typeof v))throw Error('Montant invalide.');const s=String(v).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(s))throw Error('Deux décimales au maximum.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||Math.abs(n)>1e11)throw Error('Montant hors limite.');return n;}
+export const commissionBrackets=[{to:3900000,rate:.70},{to:5900000,rate:.75},{to:7500000,rate:.80},{to:9000000,rate:.85},{to:Infinity,rate:.90}];
+export function calcCommission(input){
+ const agencyTtc=money(input.agencyTtc),share=Number(String(input.share||'100').replace(',','.')),previousHt=money(input.previousHt||'0');
+ if(agencyTtc<=0)throw Error('Honoraires agence invalides.');
+ if(!Number.isFinite(share)||share<=0||share>100)throw Error('Part personnelle invalide.');
+ if(previousHt<0)throw Error('Cumul HT invalide.');
+ const vatRate=0.20,urssafRate=0.256,agencyHt=Math.round(agencyTtc/(1+vatRate)),personalAgencyHt=Math.round(agencyHt*share/100);
+ let remaining=personalAgencyHt,position=previousHt,advisorHt=0;
+ for(const b of commissionBrackets){if(remaining<=0)break;const room=b.to===Infinity?remaining:Math.max(0,b.to-position);const slice=Math.min(remaining,room);advisorHt+=Math.round(slice*b.rate);remaining-=slice;position+=slice;}
+ const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*urssafRate),net=advisorTtc-advisorVat-urssaf;
+ return {agencyTtc,agencyHt,share,previousHt,personalAgencyHt,advisorHt,advisorVat,advisorTtc,urssaf,net,nextHt:previousHt+personalAgencyHt};
+}
 export function date(s){const d=new Date(`${s}T12:00:00Z`);return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
 export function empty(){return {format:'ma-gestion-pro',version:1,revision:0,setup:null,next:null,expenses:[],revenues:[]};}
 const integer=n=>Number.isSafeInteger(n)&&Math.abs(n)<=1e11;
