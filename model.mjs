@@ -1,16 +1,25 @@
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
 export function money(v){if(!['string','number'].includes(typeof v))throw Error('Montant invalide.');const s=String(v).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(s))throw Error('Deux décimales au maximum.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||Math.abs(n)>1e11)throw Error('Montant hors limite.');return n;}
 export const commissionBrackets=[{to:3900000,rate:.70},{to:5900000,rate:.75},{to:7500000,rate:.80},{to:9000000,rate:.85},{to:Infinity,rate:.90}];
+export function reverseCommissionBase(advisorHt,previousHt=0){
+ if(!integer(advisorHt)||advisorHt<0||!integer(previousHt)||previousHt<0)throw Error('Commission invalide.');
+ let remaining=advisorHt,position=previousHt,base=0,weighted=0,lastRate=commissionBrackets[0].rate;
+ for(const b of commissionBrackets){if(remaining<=0)break;const room=b.to===Infinity?Infinity:Math.max(0,b.to-position);if(room<=0)continue;const maxAdvisor=b.to===Infinity?remaining:Math.round(room*b.rate);const advisorSlice=Math.min(remaining,maxAdvisor);const baseSlice=b.to===Infinity?Math.round(advisorSlice/b.rate):Math.min(room,Math.round(advisorSlice/b.rate));base+=baseSlice;weighted+=advisorSlice;remaining-=advisorSlice;position+=baseSlice;lastRate=b.rate;}
+ if(remaining>0)throw Error('Commission hors barème.');
+ return {baseHt:base,nextHt:previousHt+base,rate:base?weighted/base:0,lastRate};
+}
 export function calcCommission(input){
- const agencyTtc=money(input.agencyTtc),share=Number(String(input.share||'100').replace(',','.')),previousHt=money(input.previousHt||'0');
- if(agencyTtc<=0)throw Error('Honoraires agence invalides.');
- if(!Number.isFinite(share)||share<=0||share>100)throw Error('Part personnelle invalide.');
+ const advisorTtc=money(input.advisorTtc),previousHt=money(input.previousHt||'0');
+ if(advisorTtc<=0)throw Error('Commission conseiller invalide.');
  if(previousHt<0)throw Error('Cumul HT invalide.');
- const vatRate=0.20,urssafRate=0.256,agencyHt=Math.round(agencyTtc/(1+vatRate)),personalAgencyHt=Math.round(agencyHt*share/100);
- let remaining=personalAgencyHt,position=previousHt,advisorHt=0;
- for(const b of commissionBrackets){if(remaining<=0)break;const room=b.to===Infinity?remaining:Math.max(0,b.to-position);const slice=Math.min(remaining,room);advisorHt+=Math.round(slice*b.rate);remaining-=slice;position+=slice;}
- const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*urssafRate),net=advisorTtc-advisorVat-urssaf;
- return {agencyTtc,agencyHt,share,previousHt,personalAgencyHt,advisorHt,advisorVat,advisorTtc,urssaf,net,nextHt:previousHt+personalAgencyHt};
+ const vatRate=0.20,urssafRate=0.256,advisorHt=Math.round(advisorTtc/(1+vatRate)),advisorVat=advisorTtc-advisorHt,base=reverseCommissionBase(advisorHt,previousHt),urssaf=Math.round(advisorHt*urssafRate),net=advisorHt-urssaf;
+ return {advisorTtc,previousHt,personalBaseHt:base.baseHt,nextHt:base.nextHt,effectiveRate:base.rate,lastRate:base.lastRate,advisorHt,advisorVat,urssaf,net};
+}
+export function commissionSummary(revenues,year){
+ const rows=(revenues||[]).filter(r=>!r.cancelled&&r.category==='Commission immobilière'&&(!year||r.day.slice(0,4)===String(year))).sort((a,b)=>a.day.localeCompare(b.day)||a.id-b.id);
+ let baseHt=0,advisorTtc=0,advisorHt=0,vat=0;
+ for(const r of rows){const ht=Math.round(r.cents/1.2),calc=reverseCommissionBase(ht,baseHt);baseHt=calc.nextHt;advisorTtc+=r.cents;advisorHt+=ht;vat+=r.cents-ht;}
+ return {count:rows.length,baseHt,advisorTtc,advisorHt,vat};
 }
 export function date(s){const d=new Date(`${s}T12:00:00Z`);return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
 export function empty(){return {format:'ma-gestion-pro',version:1,revision:0,setup:null,next:null,expenses:[],revenues:[]};}
