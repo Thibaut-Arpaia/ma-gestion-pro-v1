@@ -9,11 +9,15 @@ export function reverseCommissionBase(advisorHt,previousHt=0){
  return {baseHt:base,nextHt:previousHt+base,rate:base?weighted/base:0,lastRate};
 }
 export function calcCommission(input){
- const advisorTtc=money(input.advisorTtc),previousHt=money(input.previousHt||'0');
- if(advisorTtc<=0)throw Error('Commission conseiller invalide.');
+ const agencyTtc=money(input.agencyTtc),share=Number(String(input.share||'100').replace(',','.')),previousHt=money(input.previousHt||'0');
+ if(agencyTtc<=0)throw Error('Commission agence invalide.');
+ if(!Number.isFinite(share)||share<=0||share>100)throw Error('Part personnelle invalide.');
  if(previousHt<0)throw Error('Cumul HT invalide.');
- const vatRate=0.20,urssafRate=0.256,advisorHt=Math.round(advisorTtc/(1+vatRate)),advisorVat=advisorTtc-advisorHt,base=reverseCommissionBase(advisorHt,previousHt),urssaf=Math.round(advisorHt*urssafRate),net=advisorHt-urssaf;
- return {advisorTtc,previousHt,personalBaseHt:base.baseHt,nextHt:base.nextHt,effectiveRate:base.rate,lastRate:base.lastRate,advisorHt,advisorVat,urssaf,net};
+ const vatRate=0.20,urssafRate=0.256,agencyHt=Math.round(agencyTtc/(1+vatRate)),personalBaseHt=Math.round(agencyHt*share/100);
+ let remaining=personalBaseHt,position=previousHt,advisorHt=0;
+ for(const b of commissionBrackets){if(remaining<=0)break;const room=b.to===Infinity?remaining:Math.max(0,b.to-position);const slice=Math.min(remaining,room);advisorHt+=Math.round(slice*b.rate);remaining-=slice;position+=slice;}
+ const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*urssafRate),net=advisorHt-urssaf;
+ return {agencyTtc,agencyHt,share,previousHt,personalBaseHt,nextHt:previousHt+personalBaseHt,advisorHt,advisorVat,advisorTtc,urssaf,net};
 }
 export function commissionSummary(revenues,year){
  const rows=(revenues||[]).filter(r=>!r.cancelled&&r.category==='Commission immobilière'&&(!year||r.day.slice(0,4)===String(year))).sort((a,b)=>a.day.localeCompare(b.day)||a.id-b.id);

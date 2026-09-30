@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {empty,change,validate,calcCommission,commissionSummary,reverseCommissionBase} from '../model.mjs';
+const near=(actual,expected,delta=1)=>assert.ok(Math.abs(actual-expected)<=delta,`${actual} attendu proche de ${expected}`);
 const setup={day:'2026-09-01',balance:'1 000,00',next:'100'};
 const expense={day:'2026-09-15',amount:'42,50',vat:'7,08',label:'Test',category:'Restaurant',payment:'Carte pro',notes:''};
 const revenue={day:'2026-09-20',amount:'12000,00',vat:'2000,00',label:'Commission test',category:'Commission immobilière',notes:''};
@@ -45,23 +46,27 @@ test('Recettes : création, modification, suppression et validation',()=>{
  assert.throws(()=>change(d,'saveRevenue',{...revenue,label:''}));
  assert.throws(()=>change(d,'saveRevenue',{...revenue,vat:'14000'}));
 });
-test('Calculatrice commission : commission conseiller TTC, cumul automatique et paliers',()=>{
- let r=calcCommission({advisorTtc:'14000',previousHt:'0'});
+test('Calculatrice commission : agence TTC en simulation, recettes conseiller TTC en historique',()=>{
+ let r=calcCommission({agencyTtc:'20000',share:'100',previousHt:'0'});
+ assert.equal(r.agencyHt,1666667);
  assert.equal(r.personalBaseHt,1666667);
  assert.equal(r.advisorHt,1166667);
  assert.equal(r.advisorVat,233333);
  assert.equal(r.advisorTtc,1400000);
  assert.equal(r.urssaf,298667);
  assert.equal(r.net,868000);
- r=calcCommission({advisorTtc:'14000',previousHt:'95000'});
- assert.equal(r.personalBaseHt,1296297);
- assert.equal(r.nextHt,10796297);
- assert.equal(r.lastRate,.90);
+ r=calcCommission({agencyTtc:'20000',share:'50',previousHt:'0'});
+ assert.equal(r.personalBaseHt,833334);
+ assert.equal(r.advisorTtc,700001);
+ r=calcCommission({agencyTtc:'20000',share:'100',previousHt:'95000'});
+ assert.equal(r.advisorTtc,1800000);
+ assert.equal(r.nextHt,11166667);
  const crossed=reverseCommissionBase(1495000,3800000);
  assert.equal(crossed.baseHt,2000000);
  assert.equal(crossed.nextHt,5800000);
- r=calcCommission({advisorTtc:'17940',previousHt:'38000'});
+ r=calcCommission({agencyTtc:'24000',share:'100',previousHt:'38000'});
  assert.equal(r.personalBaseHt,2000000);
+ assert.equal(r.advisorHt,1495000);
  assert.equal(r.nextHt,5800000);
  let d=change(empty(),'setup',setup);
  d=change(d,'saveRevenue',{...revenue,day:'2026-01-10',amount:'14000',vat:'2333.33'});
@@ -71,6 +76,39 @@ test('Calculatrice commission : commission conseiller TTC, cumul automatique et 
  assert.equal(s.count,1);
  assert.equal(s.baseHt,1666667);
  assert.equal(s.advisorTtc,1400000);
- assert.throws(()=>calcCommission({advisorTtc:'0',previousHt:'0'}));
- assert.throws(()=>calcCommission({advisorTtc:'10000',previousHt:'-1'}));
+ assert.throws(()=>calcCommission({agencyTtc:'0',share:'100',previousHt:'0'}));
+ assert.throws(()=>calcCommission({agencyTtc:'10000',share:'0',previousHt:'0'}));
+ assert.throws(()=>calcCommission({agencyTtc:'10000',share:'100',previousHt:'-1'}));
+});
+test('Calculatrice commission : cas Excel connus et franchissements de paliers',()=>{
+ const cases=[
+  {agencyTtc:'14000.00',share:'100',previousHt:'0',advisorHt:816667,nextHt:1166667},
+  {agencyTtc:'16200.00',share:'50',previousHt:'11666.67',advisorHt:472500,nextHt:1841667},
+  {agencyTtc:'8000.00',share:'100',previousHt:'18416.67',advisorHt:466667,nextHt:2508334},
+  {agencyTtc:'14000.00',share:'100',previousHt:'25083.34',advisorHt:816667,nextHt:3675001},
+  {agencyTtc:'6000.00',share:'50',previousHt:'36750.01',advisorHt:176250,nextHt:3925001},
+  {agencyTtc:'20000.00',share:'50',previousHt:'39250.01',advisorHt:625000,nextHt:4758335},
+  {agencyTtc:'10000.00',share:'100',previousHt:'47583.35',advisorHt:625000,nextHt:5591668}
+ ];
+ for(const c of cases){const r=calcCommission(c);near(r.advisorHt,c.advisorHt);assert.equal(r.nextHt,c.nextHt);}
+ let r=calcCommission({agencyTtc:'1200',share:'100',previousHt:'38000'});
+ assert.equal(r.personalBaseHt,100000);
+ assert.equal(r.advisorHt,70000);
+ assert.equal(r.nextHt,3900000);
+ r=calcCommission({agencyTtc:'24000',share:'100',previousHt:'38000'});
+ assert.equal(r.personalBaseHt,2000000);
+ assert.equal(r.advisorHt,1495000);
+ assert.equal(r.nextHt,5800000);
+ r=calcCommission({agencyTtc:'19200',share:'100',previousHt:'59000'});
+ assert.equal(r.personalBaseHt,1600000);
+ assert.equal(r.advisorHt,1280000);
+ assert.equal(r.nextHt,7500000);
+ r=calcCommission({agencyTtc:'18000',share:'100',previousHt:'75000'});
+ assert.equal(r.personalBaseHt,1500000);
+ assert.equal(r.advisorHt,1275000);
+ assert.equal(r.nextHt,9000000);
+ r=calcCommission({agencyTtc:'12000',share:'100',previousHt:'90000'});
+ assert.equal(r.personalBaseHt,1000000);
+ assert.equal(r.advisorHt,900000);
+ assert.equal(r.nextHt,10000000);
 });
