@@ -133,3 +133,44 @@ test('Dashboard : TVA nette, réserve URSSAF et argent réellement libre',()=>{
  assert.equal(f.urssafReserve,250417);
  assert.equal(f.reserved,381750);
 });
+test('Audit calculs : recettes modifiées/supprimées et provisions ignorées correctement',()=>{
+ let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
+ d=change(d,'saveRevenue',{day:'2026-01-10',amount:'14000',vat:'0',label:'Commission A',category:'Commission immobilière',notes:''});
+ d=change(d,'saveRevenue',{day:'2026-02-10',amount:'1200',vat:'200',label:'Autre recette',category:'Autre recette',notes:''});
+ d=change(d,'save',{day:'2026-02-11',amount:'120',vat:'20',label:'Restaurant',category:'Restaurant',payment:'Carte pro',notes:''});
+ let f=financeSummary(d,2026);
+ assert.equal(f.revenueHt,1266667);
+ assert.equal(f.vatCollected,253333);
+ assert.equal(f.vatDeductible,2000);
+ assert.equal(f.vatNet,251333);
+ assert.equal(f.urssafGenerated,326167);
+ assert.equal(f.reserved,577500);
+ d=change(d,'saveRevenue',{day:'2026-01-10',amount:'28000',vat:'0',label:'Commission A modifiée',category:'Commission immobilière',notes:'',id:1});
+ let s=commissionSummary(d.revenues,2026);
+ assert.equal(s.baseHt,3333333);
+ assert.equal(s.advisorHt,2333333);
+ assert.equal(s.vat,466667);
+ f=financeSummary(d,2026);
+ assert.equal(f.revenueHt,2433333);
+ assert.equal(f.vatCollected,486667);
+ assert.equal(f.vatNet,484667);
+ assert.equal(f.urssafGenerated,626583);
+ d=change(d,'removeRevenue',1);
+ s=commissionSummary(d.revenues,2026);
+ assert.equal(s.count,0);
+ assert.equal(s.baseHt,0);
+ f=financeSummary(d,2026);
+ assert.equal(f.revenueHt,100000);
+ assert.equal(f.vatCollected,20000);
+ assert.equal(f.vatNet,18000);
+ assert.equal(f.urssafGenerated,25750);
+});
+test('Audit calculs : arrondis commission aux paliers validés',()=>{
+ const exact=[
+  {previousHt:'33333.34',agencyTtc:'20000',share:'100',advisorTtc:1466000,advisorHt:1221667,urssaf:312747,net:908920,nextHt:5000001},
+  {previousHt:'33333.34',agencyTtc:'20000',share:'50',advisorTtc:716000,advisorHt:596667,urssaf:152747,net:443920,nextHt:4166668},
+  {previousHt:'0',agencyTtc:'20000',share:'100',advisorTtc:1400000,advisorHt:1166667,urssaf:298667,net:868000,nextHt:1666667},
+  {previousHt:'0',agencyTtc:'20000',share:'50',advisorTtc:700001,advisorHt:583334,urssaf:149334,net:434000,nextHt:833334}
+ ];
+ for(const c of exact){const r=calcCommission(c);assert.equal(r.advisorTtc,c.advisorTtc);assert.equal(r.advisorHt,c.advisorHt);assert.equal(r.urssaf,c.urssaf);assert.equal(r.net,c.net);assert.equal(r.nextHt,c.nextHt);}
+});
