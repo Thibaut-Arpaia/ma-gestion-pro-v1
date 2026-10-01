@@ -25,6 +25,16 @@ export function commissionSummary(revenues,year){
  for(const r of rows){const ht=Math.round(r.cents/1.2),calc=reverseCommissionBase(ht,baseHt);baseHt=calc.nextHt;advisorTtc+=r.cents;advisorHt+=ht;vat+=r.cents-ht;}
  return {count:rows.length,baseHt,advisorTtc,advisorHt,vat};
 }
+const provisionCats=['TVA reversée','TVA reversee','Cotisations URSSAF','URSSAF','Impôt sur le revenu','Impot sur le revenu','Impôts et taxes','Impots et taxes'];
+function revenueParts(r){if(r.category==='Commission immobilière'){const ht=Math.round(r.cents/1.2);return {ht,vat:r.cents-ht};}return {ht:r.cents-r.vat_cents,vat:r.vat_cents};}
+export function financeSummary(d,year){
+ const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)),expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year));
+ let revenueHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0;
+ for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;}
+ for(const r of expenses){if(provisionCats.includes(r.category)){if(r.category.includes('TVA'))vatPaid+=r.cents;if(r.category.includes('URSSAF'))urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
+ const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*.2575),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
+ return {revenueHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,reserved:vatNet+urssafReserve};
+}
 export function date(s){const d=new Date(`${s}T12:00:00Z`);return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
 export function empty(){return {format:'ma-gestion-pro',version:1,revision:0,setup:null,next:null,expenses:[],revenues:[]};}
 const integer=n=>Number.isSafeInteger(n)&&Math.abs(n)<=1e11;
