@@ -2,6 +2,8 @@ import {calcCommission,commissionSummary,financeSummary} from './model.mjs';
 'use strict';
 const $=s=>document.querySelector(s),fmt=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});let state=null,toastTimer;
 function text(id,value){const el=$(id);if(el)el.textContent=value;}
+window.addEventListener('error',e=>notify(`Erreur de démarrage : ${e.message}`,true));
+window.addEventListener('unhandledrejection',e=>notify(`Erreur : ${e.reason?.message||e.reason||'action impossible'}`,true));
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function notify(msg,error=false){$('#toast').textContent=msg;$('#toast').classList.toggle('error',error);$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,error?14000:7000);}
 async function call(action,data){if(!window.gestion)throw Error('Le module de stockage n’a pas démarré. Recharge la page depuis son adresse HTTPS.');const r=await window.gestion.call(action,data);if(!r.ok)throw Error(r.error);return r.data;}
@@ -37,5 +39,8 @@ async function remove(id){const d=$('#delete-dialog');d.returnValue='cancel';d.s
 async function removeRevenue(id){const d=$('#delete-revenue-dialog');d.returnValue='cancel';d.showModal();d.addEventListener('close',async()=>{if(d.returnValue!=='confirm')return;try{state=await call('removeRevenue',id);if(Number(revenueForm.elements.id.value)===id)resetRevenueForm();render();notify(state.warning||'Recette supprimée.',!!state.warning);}catch(e){notify(e.message,true);}},{once:true});}
 $('#setup-form').elements.day.value=today();$('#setup-form').onsubmit=async e=>{e.preventDefault();$('#save-setup').disabled=true;try{state=await call('setup',Object.fromEntries(new FormData(e.target)));render();notify(state.warning||'Point de départ enregistré. Tu peux saisir une dépense de test.',!!state.warning);}catch(err){$('#save-setup').disabled=false;notify(err.message,true);}};
 async function backup(choose=false){try{const data=await call('backup',{choose});if(data.cancelled)return;state=data;render();notify('Sauvegarde créée : '+data.file);}catch(e){notify(e.message,true);}}
-$('#backup-main').onclick=()=>backup();$('#backup-now').onclick=()=>backup();async function connect(){try{state=await call('connect');resetForm();render();notify('Dossier ouvert. Les comptes restent enregistrés sur ce PC.');}catch(e){notify(e.message,true);}}$('#choose-backup').onclick=connect;$('#connect').onclick=connect;$('#restore').onclick=async()=>{try{const data=await call('restore');if(data.cancelled)return;state=data;resetForm();render();notify('Sauvegarde restaurée. Une copie de l’état précédent a été conservée.');}catch(e){notify(e.message,true);}};
+function bindClick(id,fn){const el=$(id);if(el)el.addEventListener('click',fn);}
+bindClick('#backup-main',()=>backup());bindClick('#backup-now',()=>backup());
+async function connect(e){const button=e?.currentTarget;try{if(button)button.disabled=true;notify('Ouverture du sélecteur de dossier...');state=await call('connect');resetForm();render();notify('Dossier ouvert. Les comptes restent enregistrés sur ce PC.');}catch(e){notify(e.message,true);}finally{if(button)button.disabled=false;}}
+bindClick('#choose-backup',connect);bindClick('#connect',connect);bindClick('#restore',async()=>{try{const data=await call('restore');if(data.cancelled)return;state=data;resetForm();render();notify('Sauvegarde restaurée. Une copie de l’état précédent a été conservée.');}catch(e){notify(e.message,true);}});
 resetForm();resetRevenueForm();call('state').then(data=>{state=data;render();}).catch(e=>notify(e.message,true));
