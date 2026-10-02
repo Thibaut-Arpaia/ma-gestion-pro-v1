@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {initReconciliation} from '../reconciliation-ui.mjs';
 import {empty,change} from '../model.mjs';
 function harness(){
- const nodes=new Map(),frames=new Map(),preferences=new Map();let frameId=0;
+ const nodes=new Map(),frames=new Map(),preferences=new Map(),audios=[];let frameId=0;
  class Element{
  constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.style={};this.classList={toggle(){}};this.value='';this.listeners={};}
  set innerHTML(text){for(const [,id] of text.matchAll(/id="([^"]+)"/g))nodes.set('#'+id,new Element('input'));}
@@ -18,33 +18,39 @@ function harness(){
  getContext(){return {clearRect(){},fillRect(){}};}
  }
  const body=new Element('body');
+ class FakeAudio{
+  constructor(src){this.src=src;this.preload='';this.currentTime=0;this.muted=false;this.paused=true;this.playCalls=0;this.pauseCalls=0;audios.push(this);}
+  play(){this.playCalls++;this.paused=false;return Promise.resolve();}
+  pause(){this.pauseCalls++;this.paused=true;}
+ }
  const doc={body,hidden:false,createElement:tag=>new Element(tag),createTextNode:text=>({text}),querySelector:key=>{if(!nodes.has(key))nodes.set(key,new Element('div'));return nodes.get(key);},addEventListener(){},removeEventListener(){}};
- const originals={};for(const key of ['document','window','localStorage','requestAnimationFrame','cancelAnimationFrame'])originals[key]=Object.getOwnPropertyDescriptor(globalThis,key);
- Object.assign(globalThis,{document:doc,window:{confirm:()=>true,innerWidth:1200,innerHeight:800,matchMedia:()=>({matches:false})},localStorage:{getItem:key=>preferences.get(key),setItem:(key,v)=>preferences.set(key,v)},requestAnimationFrame:fn=>{frames.set(++frameId,fn);return frameId;},cancelAnimationFrame:id=>frames.delete(id)});
+ const originals={};for(const key of ['document','window','localStorage','Audio','requestAnimationFrame','cancelAnimationFrame'])originals[key]=Object.getOwnPropertyDescriptor(globalThis,key);
+ Object.assign(globalThis,{document:doc,window:{confirm:()=>true,innerWidth:1200,innerHeight:800,matchMedia:()=>({matches:false})},localStorage:{getItem:key=>preferences.get(key),setItem:(key,v)=>preferences.set(key,v)},Audio:FakeAudio,requestAnimationFrame:fn=>{frames.set(++frameId,fn);return frameId;},cancelAnimationFrame:id=>frames.delete(id)});
  let d=change(empty(),'setup',{day:'2026-10-01',balance:'1000',next:1});const messages=[];let fail=false;
  const ui=initReconciliation({getState:()=>d,save:async(action,p)=>{if(fail)throw Error('Écriture refusée');d=change(d,action,p);},notify:(...args)=>messages.push(args),fmt:new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}),today:()=> '2026-10-02'});
  const tick=()=>new Promise(resolve=>setImmediate(resolve));
- return {nodes,body,frames,preferences,messages,get state(){return d;},setFail(v){fail=v;},ui,tick,restore(){for(const [key,descriptor]of Object.entries(originals))if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}};
+ return {nodes,body,frames,preferences,audios,messages,get state(){return d;},setFail(v){fail=v;},ui,tick,restore(){for(const [key,descriptor]of Object.entries(originals))if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}};
 }
-test('Interface clôture : option, animation cinq secondes, réouverture et désactivation',async()=>{
+test('Interface clôture : animation et son après succès, réouverture et désactivation',async()=>{
  const h=harness();try{
+ const audio=h.audios[0];assert.equal(audio.src,'./assets/crowd-applause-and-cheering-237756-5s.mp3');assert.equal(audio.preload,'auto');
  h.nodes.get('#bank-balance').value='1000';h.ui.render();assert.equal(h.nodes.get('#bank-close').disabled,false);
- h.nodes.get('#bank-close').onclick();await h.tick();assert.equal(h.state.bankClosures.length,1);
+ h.nodes.get('#bank-close').onclick();assert.equal(audio.playCalls,1);assert.equal(audio.muted,true);audio.currentTime=1.25;await h.tick();assert.equal(h.state.bankClosures.length,1);assert.equal(audio.muted,false);assert.equal(audio.currentTime,0);
  const canvas=h.body.children.at(-1);assert.equal(canvas.tag,'canvas');assert.equal(h.nodes.get('#bank-close').disabled,true);
  const first=h.frames.values().next().value;first(100);const last=[...h.frames.values()].at(-1);last(5100);assert.equal(canvas.removed,true);
  h.nodes.get('#bank-reopen').onclick();await h.tick();assert.equal(h.state.bankClosures.length,0);assert.equal(h.body.children.length,1);
- const option=h.nodes.get('.form-actions').children[0].children[0];option.checked=false;option.listeners.change();assert.equal(h.preferences.get('ma-gestion-pro-closure-animation'),'off');
- h.nodes.get('#bank-close').onclick();await h.tick();assert.equal(h.state.bankClosures.length,1);assert.equal(h.body.children.length,1);
+ const [animationLabel,soundLabel]=h.nodes.get('.form-actions').children;const animationOption=animationLabel.children[0],soundOption=soundLabel.children[0];animationOption.checked=false;animationOption.listeners.change();soundOption.checked=false;soundOption.listeners.change();assert.equal(h.preferences.get('ma-gestion-pro-closure-animation'),'off');assert.equal(h.preferences.get('ma-gestion-pro-closure-sound'),'off');
+ const priorPlayCalls=audio.playCalls;h.nodes.get('#bank-close').onclick();await h.tick();assert.equal(h.state.bankClosures.length,1);assert.equal(h.body.children.length,1);assert.equal(audio.playCalls,priorPlayCalls);
  }finally{h.restore();}
 });
 test('Interface clôture : erreur d’écriture et écart non nul',async()=>{
  const h=harness();try{
  h.nodes.get('#bank-balance').value='900';h.ui.render();assert.equal(h.nodes.get('#bank-close').disabled,true);
- h.nodes.get('#bank-balance').value='1000';h.ui.render();h.setFail(true);h.nodes.get('#bank-close').onclick();await h.tick();assert.equal(h.state.bankClosures,undefined);assert.equal(h.body.children.length,0);assert.deepEqual(h.messages.at(-1),['Écriture refusée',true]);assert.equal(h.nodes.get('#bank-close').disabled,false);
+ h.nodes.get('#bank-balance').value='1000';h.ui.render();h.setFail(true);const audio=h.audios[0];h.nodes.get('#bank-close').onclick();assert.equal(audio.muted,true);await h.tick();assert.equal(h.state.bankClosures,undefined);assert.equal(h.body.children.length,0);assert.equal(audio.paused,true);assert.equal(audio.currentTime,0);assert.equal(audio.muted,false);assert.deepEqual(h.messages.at(-1),['Écriture refusée',true]);assert.equal(h.nodes.get('#bank-close').disabled,false);
  }finally{h.restore();}
 });
 test('Interface clôture : préférence système de réduction des animations',async()=>{
  const h=harness();try{
- window.matchMedia=()=>({matches:true});h.nodes.get('#bank-balance').value='1000';h.ui.render();h.nodes.get('#bank-close').onclick();await h.tick();assert.equal(h.state.bankClosures.length,1);assert.equal(h.body.children.length,0);
+ window.matchMedia=()=>({matches:true});h.nodes.get('#bank-balance').value='1000';h.ui.render();h.nodes.get('#bank-close').onclick();await h.tick();assert.equal(h.state.bankClosures.length,1);assert.equal(h.body.children.length,0);assert.equal(h.audios[0].playCalls,1);assert.equal(h.audios[0].muted,false);
  }finally{h.restore();}
 });

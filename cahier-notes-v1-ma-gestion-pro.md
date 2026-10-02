@@ -276,3 +276,26 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - 34 tests passent, avec trois scénarios d’interface DOM simulée sur clôture/animation cinq secondes, réouverture, option désactivée/préférence, erreur disque, écart non nul et réduction des animations.
 - Préparation publique avec ancienne liste de fichiers réussie ; serveur HTTP local : tous les fichiers JS/HTML/CSS retournent 200 avec contenu exact et types MIME corrects. Pas d’import du module supprimé.
 - Limite explicite : navigateur réel absent ; téléchargement Chromium tenté et échoué. Démarrage complet de l’application et clics sur tous les onglets dans Opera non vérifiés ici. Ne pas annoncer tous les contrôles navigateur comme réalisés.
+
+## Validation PC V1.4.8 et suite audio — 02/10/2026
+- Thibaut confirme démarrage rétabli puis clôture avec confettis. Il confirme aussi réouverture, clôture sans confettis lorsque l’option est décochée et réactivation de l’option.
+- État final demandé : période laissée clôturée, confettis cochés.
+- Suite exécutée : recherche et tentative d’accès au son Pixabay people-applause-237756. Page inaccessible par recherche web ; accès direct renvoie HTTP 403. Aucun MP3 obtenu, aucun substitut audio intégré.
+- L’intégration du son exact nécessite le MP3 fourni par Thibaut. V1.4.8 reste fonctionnelle ; aucune nouvelle version logicielle créée tant que le son n’est pas obtenu et testé.
+
+## V1.4.9 — son d’applaudissements intégré — 02/10/2026
+- Thibaut fournit le MP3 exact scottishperson-sound-effect-crowd-applause-and-cheering-237756.mp3 et exige tous les tests disponibles avant remise du ZIP.
+- Source contrôlée : MP3 256 kb/s, 44,1 kHz mono, 7,235906 s. Dérivé publié : assets/crowd-applause-and-cheering-237756-5s.mp3, 192 kb/s, 44,1 kHz mono, 5,041633 s, fondu final, 121 670 octets.
+- À la clôture : préparation muette pendant l’écriture, retour au début et activation sonore après succès uniquement. Échec d’écriture : arrêt, remise à zéro et aucun son audible.
+- Case « Son d’applaudissements » indépendante des confettis, préférence conservée dans le navigateur. Réduction des animations ne coupe pas le son si celui-ci reste coché.
+- Contrôle de publication renforcé pour les chemins new Audio. MP3 manquant : préparation publique refusée. CSP media-src self.
+- Contrôles source : 34 tests Node, syntaxes, décodage FFmpeg, dossier public et dépendances, HTTP 200, audio/mpeg ; contrôle négatif sans MP3 réussi. Le ZIP doit encore être testé après extraction avant livraison. Opera réel à confirmer par Thibaut.
+- Contrôle final du paquet : ZIP extrait dans un dossier neuf, 39 fichiers intègres, empreinte du MP3 conforme, 34 tests relancés depuis l’extraction, syntaxes vérifiées, dossier public reconstruit, dépendances vérifiées et audio servi en HTTP 200 avec type audio/mpeg. ZIP prêt pour essai Opera.
+
+## V2.0 — intégration du visuel validé — 02/10/2026
+- Correction de référence : les deux images « Tableau de bord financier néon nocturne.png » et l’ancien mockup horizontal Lucky Dinner / Countach ne sont pas le visuel à intégrer.
+- Visuel exact confirmé par Thibaut avec sa capture puis retrouvé dans l’ancienne conversation : « Tableau de bord néon aux accents turquoise.png », créé le 24/09/2026. Caractéristiques : logo rose dans la barre gauche, Bonjour Thibaut en cyan, Countach vue arrière au centre du bandeau, Lucky Dinner à droite, panneaux bleu nuit, accents cyan/rose/turquoise/jaune, graphique compact et calculatrice à droite.
+- V2.0 applique cette identité au logiciel actuel. Les huit indicateurs fonctionnels restent affichés en deux rangées de quatre. Ordre des sept onglets conservé : Dashboard, Dépenses, Recettes, Rapprochement, Calculatrice, Bilan, Réglages & sauvegardes.
+- Aucun changement des calculs, du stockage ou du format des comptes. Confettis et son V1.4.9 conservés.
+- Contrôle final du paquet : ZIP extrait dans un dossier neuf, 41 fichiers intègres, 36 tests Node relancés, syntaxes vérifiées, structure HTML et identifiants contrôlés, dossier public reconstruit, empreintes image/son conformes, dépendances vérifiées, tests négatifs sans image et sans MP3 réussis, 10 fichiers publics servis en HTTP 200 avec contenu et types MIME exacts.
+- Limite : le navigateur distant refuse les URL locales par politique de sécurité. Ne pas annoncer le rendu Opera comme vérifié avant l’essai réel de Thibaut.

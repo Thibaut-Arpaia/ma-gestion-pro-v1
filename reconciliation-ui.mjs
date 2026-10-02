@@ -12,7 +12,7 @@ export function initReconciliation({getState,save,notify,fmt,today}){
  for(const id of ['#bank-from','#bank-end','#bank-kind','#bank-status'])$(id).addEventListener('change',render);
  balance.addEventListener('input',renderSummary);
  let busy=false;
- async function mutate(action,p){if(busy)return;busy=true;render();try{await saveBankAction(save,action,p,celebrate);notify(action==='closeBank'?'Période clôturée.':action==='reopenBank'?'Dernière clôture rouverte.':'Pointage enregistré.');}catch(e){notify(e.message,true);}finally{busy=false;render();}}
+ async function mutate(action,p){if(busy)return;busy=true;render();if(action==='closeBank')celebrate.prepareAudio();try{await saveBankAction(save,action,p,celebrate);notify(action==='closeBank'?'Période clôturée.':action==='reopenBank'?'Dernière clôture rouverte.':'Pointage enregistré.');}catch(e){if(action==='closeBank')celebrate.cancelAudio();notify(e.message,true);}finally{busy=false;render();}}
  $('#bank-close').onclick=()=>{if(window.confirm('Clôturer les opérations jusqu’au '+end.value+' ? Les montants et pointages seront verrouillés.'))mutate('closeBank',{end:end.value,balance:balance.value});};
  $('#bank-reopen').onclick=()=>{if(window.confirm('Rouvrir la dernière clôture pour modifier cette période ?'))mutate('reopenBank',{});};
  function renderSummary(){const d=getState();const button=$('#bank-close');button.disabled=true;$('#bank-reopen').hidden=!d?.bankClosures?.length;$('#bank-reopen').disabled=busy;
@@ -38,16 +38,24 @@ export async function saveBankAction(save,action,payload,celebrate){
  if(action==='closeBank')try{celebrate();}catch{/* Une animation indisponible ne remet pas en cause la clôture. */}
 }
 function initClosureFeedback(section){
- const key='ma-gestion-pro-closure-animation';
- const label=document.createElement('label');label.className='closure-option';
- const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=true;
- try{checkbox.checked=localStorage.getItem(key)!=='off';}catch{}
- label.append(checkbox,document.createTextNode('Confettis à la clôture'));
- section.querySelector('.form-actions').append(label);
- checkbox.addEventListener('change',()=>{try{localStorage.setItem(key,checkbox.checked?'on':'off');}catch{}});
- let stop=()=>{};
- return ()=>{
- stop();if(!checkbox.checked||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+ const actions=section.querySelector('.form-actions');
+ function option(text,key){
+  const label=document.createElement('label');label.className='closure-option';
+  const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=true;
+  try{checkbox.checked=localStorage.getItem(key)!=='off';}catch{}
+  label.append(checkbox,document.createTextNode(text));actions.append(label);
+  checkbox.addEventListener('change',()=>{try{localStorage.setItem(key,checkbox.checked?'on':'off');}catch{}});
+  return checkbox;
+ }
+ const animation=option('Confettis à la clôture','ma-gestion-pro-closure-animation');
+ const sound=option('Son d’applaudissements','ma-gestion-pro-closure-sound');
+ const audio=new Audio('./assets/crowd-applause-and-cheering-237756-5s.mp3');audio.preload='auto';
+ let audioPrimed=false,stop=()=>{};
+ function cancelAudio(){try{audio.pause();audio.currentTime=0;audio.muted=false;}catch{}audioPrimed=false;}
+ function prepareAudio(){cancelAudio();if(!sound.checked)return;try{audio.currentTime=0;audio.muted=true;audioPrimed=true;const promise=audio.play();promise?.catch?.(()=>{audioPrimed=false;});}catch{audioPrimed=false;}}
+ function celebrate(){
+  if(sound.checked){try{audio.currentTime=0;audio.muted=false;if(!audioPrimed||audio.paused)audio.play()?.catch?.(()=>{});}catch{}audioPrimed=false;}else cancelAudio();
+  stop();if(!animation.checked||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
  const canvas=document.createElement('canvas');canvas.className='closure-confetti';canvas.setAttribute('aria-hidden','true');document.body.append(canvas);
  const ctx=canvas.getContext('2d');if(!ctx){canvas.remove();return;}
  const width=window.innerWidth,height=window.innerHeight;canvas.width=width;canvas.height=height;
@@ -63,5 +71,7 @@ function initClosureFeedback(section){
  frame=requestAnimationFrame(draw);
  }
  frame=requestAnimationFrame(draw);
- };
+ }
+ celebrate.prepareAudio=prepareAudio;celebrate.cancelAudio=cancelAudio;
+ return celebrate;
 }
