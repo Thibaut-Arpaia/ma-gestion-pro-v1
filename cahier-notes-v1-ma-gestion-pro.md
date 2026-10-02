@@ -258,3 +258,9 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Ni pointage, ni réouverture, ni lecture de dossier ne déclenchent l’effet. Échec disque : pas de confettis ; erreur visuelle : clôture réussie conservée, aucun nouvel enregistrement.
 - 31 tests Node passent, dont deux nouveaux scénarios d’ordre d’exécution et de gestion des erreurs. Syntaxe JavaScript vérifiée. Essai visuel PC non réalisé ici.
 - Son d’applaudissements Pixabay 237756 et option muet encore à intégrer ; cette version n’ajoute aucun son. Calculs et comptes inchangés.
+
+## Incident publication V1.4.6 et correction V1.4.7 — 02/10/2026
+- Capture : closure-feedback.mjs 404 et application non initialisée. Cause confirmée : nouveau module oublié dans la copie explicite du workflow .github/workflows/pages.yml. Erreur de préparation de l’assistant ; ZIP contenait bien le module, mais cela ne suffisait pas à le publier.
+- V1.4.7 ajoute le module au workflow et vérifie les dépendances JS/HTML/CSS du dossier public avant publication (verify-public.mjs).
+- 31 tests Node réussis ; préparation réelle du dossier public vérifiée. Suppression volontaire du module dans le dossier temporaire : contrôle refuse correctement la publication incomplète.
+- Installation requiert aussi mise à jour de .github/workflows/pages.yml et ajout de verify-public.mjs. Pas de modification des comptes. Déploiement distant et animation PC encore à vérifier.
