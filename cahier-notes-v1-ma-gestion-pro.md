@@ -209,3 +209,11 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Bilan devient un onglet indépendant sous Calculatrice, avant Réglages & sauvegardes.
 - Ordre définitif actuel : Dashboard, Dépenses, Recettes, Rapprochement, Calculatrice, Bilan, Réglages & sauvegardes.
 - Contrôles à examiner reste repliable sur le Dashboard. Bilan affiche directement ses filtres et l’export PDF.
+
+## V1.4.3 validée sur PC et audit V1.4.4 — 02/10/2026
+- Thibaut confirme V1.4.3 validée sur son PC. Audit des échéances futures demandé et exécuté, auparavant seulement annoncé.
+- Anomalie confirmée : solde du Dashboard limité à aujourd’hui, réserves TVA/URSSAF calculées sur toute l’année, saisies futures incluses. Le disponible était donc incohérent.
+- V1.4.4 : calcul centralisé des indicateurs du Dashboard à la date locale du jour. Réserves TVA/URSSAF et solde suivent la même limite. Dépenses, recettes et paiements fiscaux futurs exclus ; date du jour incluse. Opérations annulées exclues même avec un fichier complet.
+- Listes et bilan conservent les saisies futures conformément à la décision V1.3.3. Pas de migration des comptes ni de changement de taux ou de navigation.
+- Vérification : 29 tests Node réussis, dont 3 nouveaux scénarios sur les limites de date, échéances récurrentes avec TVA, paiements TVA/URSSAF, virement personnel, recettes futures, année suivante, modification/annulation et conservation JSON. Tests existants de sauvegarde/restauration et rapprochement toujours réussis.
+- Contrôle réel de V1.4.4 sur PC non effectué ici. ZIP préparé, pas de publication distante effectuée.

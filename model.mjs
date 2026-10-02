@@ -36,8 +36,9 @@ function provisionKind(category){
  return null;
 }
 function revenueParts(r){if(r.category==='Commission immobilière'){const ht=Math.round(r.cents/1.2);return {ht,vat:r.cents-ht};}return {ht:r.cents-r.vat_cents,vat:r.vat_cents};}
-export function financeSummary(d,year){
- const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)),expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year));
+export function financeSummary(d,year,asOf=`${year}-12-31`){
+ if(!date(asOf))throw Error("Date de calcul invalide.");
+ const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)&&r.day<=asOf),expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)&&r.day<=asOf);
  let revenueHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0;
  for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;}
  for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
@@ -143,4 +144,18 @@ export function recurringOccurrence(d,id,month){
  const r=(d.recurring||[]).find(r=>r.id===id);if(!r||!r.active)throw Error('Récurrence inactive ou introuvable.');if(!validMonth(month)||month<r.start)throw Error('Mois antérieur au début de la récurrence ou invalide.');if(r.issued.includes(month))throw Error('Cette échéance a déjà été générée, même si la dépense a été supprimée.');
  const [year,m]=month.split('-').map(Number),last=new Date(Date.UTC(year,m,0)).getUTCDate();const day=month+'-'+String(Math.min(r.day,last)).padStart(2,'0');if(!d.setup||day<d.setup.day)throw Error('Échéance antérieure au point de départ.');
  return {day,label:r.label,category:r.category,cents:r.cents,vat_cents:r.vat_cents,payment:r.payment};
+}
+
+// Indicateurs du jour ; le bilan des saisies conserve son périmètre complet.
+export function dashboardSummary(d,asOf){
+ if(!date(asOf))throw Error('Date de calcul invalide.');
+ const year=Number(asOf.slice(0,4));
+ const expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day<=asOf);
+ const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day<=asOf);
+ const annualExpenses=expenses.filter(r=>r.day.slice(0,4)===String(year));
+ const annualRevenues=revenues.filter(r=>r.day.slice(0,4)===String(year));
+ const total=annualExpenses.reduce((s,r)=>s+r.cents,0),revenueTotal=annualRevenues.reduce((s,r)=>s+r.cents,0);
+ const finance=financeSummary(d,year,asOf);
+ const balance=d.setup?d.setup.balance+revenues.reduce((s,r)=>s+r.cents,0)-expenses.filter(r=>!r.historical).reduce((s,r)=>s+r.cents,0):null;
+ return {annualExpenses,annualRevenues,total,revenueTotal,cashflow:revenueTotal-total,finance,balance,freeCash:balance===null?null:balance-finance.reserved};
 }
