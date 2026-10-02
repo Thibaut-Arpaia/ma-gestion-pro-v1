@@ -223,3 +223,8 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Thibaut confirme également la conservation après actualisation et réouverture.
 - Nouvelle décision explicite : à l’ouverture du dossier, afficher le Dashboard. Cette décision remplace l’accueil Rapprochement prévu en V1.3. Elle vaut sur PC et mobile, également après actualisation puis réouverture du dossier.
 - V1.4.5 : redirection vers Dashboard après ouverture réussie ; navigation manuelle vers Rapprochement conservée. Aucun changement des comptes ni des calculs.
+
+## Validation PC V1.4.5 — 02/10/2026
+- Thibaut confirme le parcours demandé : arrivée sur Dashboard après ouverture Test3, accès manuel au Rapprochement, retour au Dashboard après actualisation puis réouverture.
+- Indicateurs de référence conservés : solde 13 580 €, TVA 513,33 €, URSSAF 2 761,67 €, disponible 10 305 €.
+- Reste à confirmer pour la ligne manuelle « Test échéance future » du 15/10/2026 à 24 € : présence dans le bilan d’octobre, puis suppression de cette seule ligne d’essai. Ne pas supprimer la récurrence « Test abonnement » ni une autre opération.
