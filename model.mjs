@@ -103,3 +103,9 @@ export function duplicateCandidates(rows,input){
  if(!date(input.day)||!label||cents<=0)return [];
  return (rows||[]).filter(r=>!r.cancelled&&r.id!==Number(input.id)&&r.day===input.day&&r.cents===cents&&normCategory(r.label)===label);
 }
+
+export function duplicateGroups(rows){
+ const groups=new Map();
+ for(const row of rows||[]){if(row.cancelled)continue;const key=JSON.stringify([row.day,row.cents,normCategory(row.label)]);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);}
+ return [...groups.values()].filter(group=>group.length>1);
+}

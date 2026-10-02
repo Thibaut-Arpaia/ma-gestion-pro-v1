@@ -1,4 +1,4 @@
-import {calcCommission,commissionSummary,financeSummary,duplicateCandidates} from './model.mjs';
+import {calcCommission,commissionSummary,financeSummary,duplicateCandidates,duplicateGroups} from './model.mjs';
 import {missingReceipts,validateReceipt,receiptLimit} from './receipts.mjs';
 import {initReconciliation} from './reconciliation-ui.mjs';
 'use strict';
@@ -15,6 +15,18 @@ const receiptMetric=document.createElement('article');const receiptMetricBody=do
 function confirmDuplicate(rows,data,type){
  const matches=duplicateCandidates(rows,data);if(!matches.length)return true;
  return window.confirm(`Doublon potentiel : ${matches.length} ${type} déjà enregistrée(s) avec la même date, le même libellé et le même montant (${fmt.format(matches[0].cents/100)}).\nEnregistrer quand même ?`);
+}
+const controlsPanel=document.createElement('section');controlsPanel.className='panel recent';
+const controlsHeading=document.createElement('h2');controlsHeading.textContent='Contrôles à examiner';
+const controlsHint=document.createElement('p');controlsHint.className='muted';controlsHint.textContent='Doublons potentiels et justificatifs manquants. Aucune suppression automatique.';
+const controlsBody=document.createElement('div');controlsPanel.append(controlsHeading,controlsHint,controlsBody);$('#dashboard .content').append(controlsPanel);
+function renderControls(){
+ controlsBody.replaceChildren();if(!state?.connected){controlsBody.textContent='Ouvre ton dossier pour consulter les contrôles.';return;}
+ const groups=[...duplicateGroups(state.expenses).map(rows=>({rows,type:'expense'})),...duplicateGroups(state.revenues).map(rows=>({rows,type:'revenue'}))];
+ for(const {rows,type} of groups){const line=document.createElement('div');line.className='row';const description=document.createElement('span');description.textContent=`Doublon potentiel : ${rows.length} ${type==='expense'?'dépenses':'recettes'} · ${rows[0].day.split('-').reverse().join('/')} · ${rows[0].label} · ${fmt.format(rows[0].cents/100)}`;const actions=document.createElement('div');actions.className='row-actions';for(const row of rows){const button=document.createElement('button');button.textContent=type==='expense'?`Examiner réf. ${row.ref??'historique'}`:`Examiner recette ${row.id}`;button.onclick=()=>type==='expense'?editExpense(row):editRevenue(row);actions.append(button);}line.append(description,actions);controlsBody.append(line);}
+ const missing=state.expenses.filter(row=>missingReceipts([row]));
+ for(const row of missing){const line=document.createElement('div');line.className='row';const description=document.createElement('span');description.textContent=`Ticket manquant · ${row.day.split('-').reverse().join('/')} · ${row.label} · ${fmt.format(row.cents/100)}`;const button=document.createElement('button');button.textContent='Ajouter le ticket';button.onclick=()=>editExpense(row);line.append(description,button);controlsBody.append(line);}
+ if(!groups.length&&!missing.length)controlsBody.textContent='Aucun doublon potentiel ni ticket manquant détecté.';
 }
 function resetReceipt(){receiptInput.value='';receiptRemove.checked=false;receiptExempt.checked=false;receiptStatus.textContent='';receiptRemoveLabel.hidden=true;}
 function downloadReceipt(r){const bytes=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));const url=URL.createObjectURL(new Blob([bytes],{type:r.type}));const a=document.createElement('a');a.href=url;a.download=r.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
@@ -36,7 +48,7 @@ function render(){if(!state)return;const year=new Date().getFullYear(),elapsed=n
  text('#list-count',state.expenses.length);text('#revenue-list-count',state.revenues.length);list('#recent',state.expenses.slice(0,3),false);filterList();filterRevenueList();text('#backup-status',state.backupFolder?'Copie de l’état précédent avant chaque changement':'Aucun dossier choisi');text('#data-path','Données : '+state.dataPath);text('#folder-path',state.backupFolder?'Sauvegardes : '+state.backupFolder:'Choisis un dossier pour activer les copies automatiques.');
  text('#connection-status',state.connected?'Dossier ouvert : '+state.dataPath:'Ouvre ton dossier pour retrouver tes comptes.');const setupForm=$('#setup-form');Array.from(setupForm.elements).forEach(e=>e.disabled=!state.connected||!!state.setup);if(!state.setup){text('#setup-summary','');setupForm.reset();setupForm.elements.day.value=today();}if(state.setup){const f=$('#setup-form');f.elements.day.value=state.setup.day;f.elements.balance.value=(state.setup.balance/100).toFixed(2);f.elements.next.value=state.setup.first;Array.from(f.elements).forEach(e=>e.disabled=true);text('#setup-summary','Point de départ enregistré.');}
  $('#save-expense').disabled=!state.setup;$('#save-revenue').disabled=!state.setup;text('#commission-cumul',`Cumul automatique ${year} : ${fmt.format(commissions.baseHt/100)} HT, calculé depuis ${commissions.count} recette${commissions.count>1?'s':''} Commission immobilière.`);historyHint();}
-function filterList(){if(!state)return;bankUI.render();receiptCount.textContent=missingReceipts(state.expenses);const q=$('#search').value.toLocaleLowerCase('fr');list('#expense-list',state.expenses.filter(r=>`${r.label} ${r.category} ${r.ref??''}`.toLocaleLowerCase('fr').includes(q)),true);}
+function filterList(){if(!state)return;bankUI.render();renderControls();receiptCount.textContent=missingReceipts(state.expenses);const q=$('#search').value.toLocaleLowerCase('fr');list('#expense-list',state.expenses.filter(r=>`${r.label} ${r.category} ${r.ref??''}`.toLocaleLowerCase('fr').includes(q)),true);}
 $('#search').addEventListener('input',filterList);
 function filterRevenueList(){if(!state)return;const q=$('#revenue-search').value.toLocaleLowerCase('fr');list('#revenue-list',state.revenues.filter(r=>`${r.label} ${r.category}`.toLocaleLowerCase('fr').includes(q)),true,'revenue');}
 $('#revenue-search').addEventListener('input',filterRevenueList);

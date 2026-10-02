@@ -157,3 +157,17 @@ Après une validation utilisateur, passer directement au prochain test ou à la 
 
 ## V1.3.1 — doublons potentiels
 Alerte avant enregistrement pour même date, montant et libellé normalisé (casse, accents, espaces, ponctuation), dans le même type d'opération. Ignorer l'opération modifiée elle-même et les opérations annulées. Annuler la confirmation conserve le formulaire sans écriture ; confirmer permet une opération identique légitime. Catégorie et mode de paiement ne neutralisent pas l'alerte. Aucun effacement automatique.
+
+
+## Retour utilisateur — analyse des captures et doublons — 02/10/2026
+- Erreur d'assistance : la capture montrait « test reesto tva » (réf. 5) et « test resto tva » (réf. 1). La différence de libellé expliquait l'absence d'alerte ; elle aurait dû être repérée avant de proposer un changement de dossier ou de vérifier la version.
+- Règle : examiner et comparer précisément date, montant, libellé et état affichés avant toute manipulation demandée. Ne pas conclure à un défaut de version tant que les données visibles expliquent le comportement.
+- Utilisateur confirme avoir obtenu l'alerte avec le libellé identique : détection du doublon validée pour ce parcours. Une faute de frappe différente n'est actuellement pas détectée ; ne pas présenter la détection comme approximative.
+- Nettoyage du test : annuler l'alerte ne crée aucune opération ; si l'utilisateur confirme l'enregistrement ou a déjà créé une ligne d'essai, supprimer seulement cette nouvelle ligne, en conservant l'originale.
+
+
+## V1.3.2 — panneau de contrôles
+- Après nettoyage utilisateur confirmé, poursuivre directement le développement autonome.
+- Dashboard : lister les groupes de doublons potentiels déjà enregistrés, séparément pour dépenses et recettes ; même date, montant et libellé normalisé. Boutons d'examen ouvrant l'opération précise par identifiant interne.
+- Lister les dépenses nécessitant un justificatif absent ; accès direct à la modification pour ajouter le ticket. Pas de suppression ni correction automatique.
+- Apprentissage : ne pas identifier une opération à supprimer uniquement par une référence recalculée. Vérifier son libellé, date et montant sur la capture actuelle.
