@@ -133,6 +133,23 @@ test('Dashboard : TVA nette, réserve URSSAF et argent réellement libre',()=>{
  assert.equal(f.urssafReserve,250417);
  assert.equal(f.reserved,381750);
 });
+test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=>{
+ let d=change(empty(),'setup',setup);
+ d=change(d,'saveRevenue',{...revenue,day:'2026-09-20',amount:'14000',vat:'0'});
+ d=change(d,'save',{...expense,day:'2026-09-21',amount:'120',vat:'20',category:'Restaurant'});
+ d=change(d,'save',{...expense,day:'2026-09-22',amount:'1000',vat:'0',category:'tva reverse'});
+ d=change(d,'save',{...expense,day:'2026-09-23',amount:'500',vat:'0',category:'cotisations urssaf'});
+ let f=financeSummary(d,2026);
+ assert.equal(f.vatPaid,100000);
+ assert.equal(f.urssafPaid,50000);
+ assert.equal(f.vatNet,131333);
+ assert.equal(f.urssafReserve,250417);
+ d=change(d,'save',{...expense,day:'2026-09-24',amount:'100',vat:'0',category:'TVA payée'});
+ d=change(d,'save',{...expense,day:'2026-09-25',amount:'50',vat:'0',category:'Paiement URSSAF'});
+ f=financeSummary(d,2026);
+ assert.equal(f.vatPaid,110000);
+ assert.equal(f.urssafPaid,55000);
+});
 test('Audit calculs : recettes modifiées/supprimées et provisions ignorées correctement',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
  d=change(d,'saveRevenue',{day:'2026-01-10',amount:'14000',vat:'0',label:'Commission A',category:'Commission immobilière',notes:''});

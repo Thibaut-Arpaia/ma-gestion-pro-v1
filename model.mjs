@@ -25,13 +25,20 @@ export function commissionSummary(revenues,year){
  for(const r of rows){const ht=Math.round(r.cents/1.2),calc=reverseCommissionBase(ht,baseHt);baseHt=calc.nextHt;advisorTtc+=r.cents;advisorHt+=ht;vat+=r.cents-ht;}
  return {count:rows.length,baseHt,advisorTtc,advisorHt,vat};
 }
-const provisionCats=['TVA reversée','TVA reversee','Cotisations URSSAF','URSSAF','Impôt sur le revenu','Impot sur le revenu','Impôts et taxes','Impots et taxes'];
+function normCategory(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function provisionKind(category){
+ const c=normCategory(category);
+ if(c.includes('tva')&&(c.includes('reversee')||c.includes('reverse')||c.includes('payee')||c.includes('paiement')))return 'vat';
+ if(c.includes('urssaf')&&(c.includes('cotisation')||c.includes('payee')||c.includes('paiement')||c==='urssaf'))return 'urssaf';
+ if(c.includes('impot'))return 'tax';
+ return null;
+}
 function revenueParts(r){if(r.category==='Commission immobilière'){const ht=Math.round(r.cents/1.2);return {ht,vat:r.cents-ht};}return {ht:r.cents-r.vat_cents,vat:r.vat_cents};}
 export function financeSummary(d,year){
  const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)),expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year));
  let revenueHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0;
  for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;}
- for(const r of expenses){if(provisionCats.includes(r.category)){if(r.category.includes('TVA'))vatPaid+=r.cents;if(r.category.includes('URSSAF'))urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
+ for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
  const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*.2575),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
  return {revenueHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,reserved:vatNet+urssafReserve};
 }
