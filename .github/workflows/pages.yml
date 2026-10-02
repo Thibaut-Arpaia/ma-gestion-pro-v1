@@ -39,7 +39,7 @@ jobs:
         run: |
           mkdir public
           touch public/.nojekyll
-          cp index.html app.js style.css model.mjs storage.mjs receipts.mjs public/
+           cp index.html app.js style.css model.mjs storage.mjs receipts.mjs reconciliation.mjs reconciliation-ui.mjs public/
           cp -R assets public/assets
 
       - uses: actions/upload-pages-artifact@v3
