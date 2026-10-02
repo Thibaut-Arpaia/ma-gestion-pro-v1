@@ -143,3 +143,17 @@ Priorite : a corriger avant validation propre de la V1.
 - Sauvegarde apres plusieurs depenses.
 - Restauration apres plusieurs depenses.
 - Comportement apres fermeture puis reouverture du navigateur.
+
+
+## V1.3 — validation utilisateur du rapprochement — 02/10/2026
+- Test3 : six opérations pointées, solde initial 1 000 €, entrées 15 200 €, sorties 2 620 €, solde pointé 13 580 €, écart 0 €.
+- Utilisateur confirme la clôture, puis la conservation des pointages et du verrouillage après actualisation et réouverture du dossier, puis la réouverture de la dernière clôture avec cases modifiables.
+- Blocage temporaire initial des onglets et du sélecteur de dossier signalé sous Opera ; fonctionnement revenu sans correction identifiée. Console fournie : favicon 404 uniquement. Cause non établie, anomalie à surveiller ; ne pas déclarer corrigée.
+- Ces contrôles valident le parcours de rapprochement essayé ; ils ne constituent pas une validation de toutes les exigences du logiciel.
+
+
+## Règle permanente — autonomie — 02/10/2026
+Après une validation utilisateur, passer directement au prochain test ou à la prochaine étape exécutable sans intervention de Thibaut. Ne pas attendre un nouveau « GO » pour poursuivre le travail déjà autorisé. Demander son intervention uniquement pour une manipulation sur son PC inaccessible ici, une information nécessaire ou une décision réellement non tranchée. Ne pas promettre de travailler en arrière-plan après avoir terminé une réponse.
+
+## V1.3.1 — doublons potentiels
+Alerte avant enregistrement pour même date, montant et libellé normalisé (casse, accents, espaces, ponctuation), dans le même type d'opération. Ignorer l'opération modifiée elle-même et les opérations annulées. Annuler la confirmation conserve le formulaire sans écriture ; confirmer permet une opération identique légitime. Catégorie et mode de paiement ne neutralisent pas l'alerte. Aucun effacement automatique.

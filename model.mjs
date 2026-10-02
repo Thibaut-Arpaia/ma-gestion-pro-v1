@@ -96,3 +96,10 @@ export function change(source,action,p){const d=structuredClone(validate(source)
 }
 export function visible(d){return d.expenses.filter(r=>!r.cancelled).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);}
 export function visibleRevenues(d){return d.revenues.filter(r=>!r.cancelled).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);}
+
+// Une alerte reste informative : deux opérations identiques peuvent être légitimes.
+export function duplicateCandidates(rows,input){
+ const cents=money(input.amount),label=normCategory(input.label);
+ if(!date(input.day)||!label||cents<=0)return [];
+ return (rows||[]).filter(r=>!r.cancelled&&r.id!==Number(input.id)&&r.day===input.day&&r.cents===cents&&normCategory(r.label)===label);
+}
