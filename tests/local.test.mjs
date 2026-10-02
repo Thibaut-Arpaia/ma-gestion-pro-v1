@@ -27,11 +27,12 @@ test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans fa
  globalThis.window={isSecureContext:true,showDirectoryPicker:async()=>dirHandle(root),showOpenFilePicker:async()=>[fileHandle(selection)],confirm:()=>true};
  Object.defineProperty(globalThis,'navigator',{configurable:true,value:{locks:{request:(_name,fn)=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;}}}});
  try{
- const a=await import('../storage.mjs?test1');await a.run('connect');await a.run('setup',setup);await a.run('save',expense);
- const b=await import('../storage.mjs?test2');assert.equal((await b.run('state')).connected,false);const reopened=await b.run('connect');assert.equal(reopened.expenses[0].cents,4250);
+ const receipt={name:'ticket.pdf',type:'application/pdf',size:9,data:Buffer.from('%PDF-1.4\n').toString('base64')};
+ const a=await import('../storage.mjs?test1');await a.run('connect');await a.run('setup',setup);await a.run('save',{...expense,receipt});
+ const b=await import('../storage.mjs?test2');assert.equal((await b.run('state')).connected,false);const reopened=await b.run('connect');assert.equal(reopened.expenses[0].cents,4250);assert.deepEqual(reopened.expenses[0].receipt,receipt);
  const saved=await b.run('backup');selection=path.join(root,'sauvegardes',saved.file);
  await Promise.all([b.run('save',expense),b.run('save',expense)]);assert.equal((await b.run('state')).next,103);
- await b.run('restore');assert.equal((await b.run('state')).expenses.length,1);
+ await b.run('restore');assert.equal((await b.run('state')).expenses.length,1);assert.deepEqual((await b.run('state')).expenses[0].receipt,receipt);
  const prior=await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8');fail=true;await assert.rejects(b.run('save',expense),/Disque indisponible/);fail=false;
  assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
  selection=path.join(root,'invalid.json');await fs.writeFile(selection,'{}');await assert.rejects(b.run('restore'));assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);

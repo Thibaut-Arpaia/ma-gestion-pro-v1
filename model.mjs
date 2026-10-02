@@ -1,3 +1,4 @@
+import {validateReceipts,updateReceipt} from './receipts.mjs';
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
 export function money(v){if(!['string','number'].includes(typeof v))throw Error('Montant invalide.');const s=String(v).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(s))throw Error('Deux décimales au maximum.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||Math.abs(n)>1e11)throw Error('Montant hors limite.');return n;}
 export const commissionBrackets=[{to:3900000,rate:.70},{to:5900000,rate:.75},{to:7500000,rate:.80},{to:9000000,rate:.85},{to:Infinity,rate:.90}];
@@ -54,6 +55,7 @@ function renumber(d){
 }
 export function validate(d){
  if(!d||d.format!=='ma-gestion-pro'||d.version!==1||!Number.isSafeInteger(d.revision)||d.revision<0||!Array.isArray(d.expenses))throw Error('Fichier Ma Gestion Pro invalide ou version incompatible.');
+ validateReceipts(d.expenses);
  if(!Array.isArray(d.revenues))d.revenues=[];
  if(d.setup===null){if(d.expenses.length||d.revenues.length||d.next!==null)throw Error('Point de départ absent.');return d;}
  if(!d.setup||!date(d.setup.day)||!integer(d.setup.balance)||!integer(d.setup.first)||d.setup.first<1||!integer(d.next)||d.next<d.setup.first)throw Error('Paramètres invalides.');
@@ -79,7 +81,14 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  if(p.id){const old=d.revenues.find(r=>r.id===p.id&&!r.cancelled);if(!old)throw Error('Recette introuvable.');Object.assign(old,v);}
  else{const id=d.revenues.reduce((m,r)=>Math.max(m,r.id),0)+1;d.revenues.push({...v,id,cancelled:false});}
  }else if(action==='removeRevenue'){const r=d.revenues.find(r=>r.id===p&&!r.cancelled);if(!r)throw Error('Recette introuvable.');r.cancelled=true;}
- else throw Error('Action inconnue.');renumber(d);d.revision++;return validate(d);
+ else if(action==='restoreReceipt'){
+ const row=d.expenses.find(r=>r.id===p.id&&!r.cancelled),index=p.index;
+ if(!row||!Number.isInteger(index)||index<0||!row.receiptTrash?.[index])throw Error('Justificatif introuvable.');
+ const restored=row.receiptTrash.splice(index,1)[0];if(row.receipt)row.receiptTrash.push(row.receipt);row.receipt=restored;
+ }
+ else throw Error('Action inconnue.');
+ if(action==='save'){const row=p.id?d.expenses.find(r=>r.id===p.id):d.expenses.at(-1);updateReceipt(row,p);}
+ renumber(d);d.revision++;return validate(d);
 }
 export function visible(d){return d.expenses.filter(r=>!r.cancelled).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);}
 export function visibleRevenues(d){return d.revenues.filter(r=>!r.cancelled).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);}
