@@ -217,3 +217,9 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Listes et bilan conservent les saisies futures conformément à la décision V1.3.3. Pas de migration des comptes ni de changement de taux ou de navigation.
 - Vérification : 29 tests Node réussis, dont 3 nouveaux scénarios sur les limites de date, échéances récurrentes avec TVA, paiements TVA/URSSAF, virement personnel, recettes futures, année suivante, modification/annulation et conservation JSON. Tests existants de sauvegarde/restauration et rapprochement toujours réussis.
 - Contrôle réel de V1.4.4 sur PC non effectué ici. ZIP préparé, pas de publication distante effectuée.
+
+## V1.4.4 validée sur PC et V1.4.5 — accueil Dashboard — 02/10/2026
+- Test3 : après ajout de « Test échéance future » du 15/10/2026 à 24 €, solde 13 580 €, TVA 513,33 €, URSSAF 2 761,67 €, disponible 10 305 € inchangés. Capture analysée ; ticket manquant supplémentaire attendu. TVA saisie non visible sur la capture.
+- Thibaut confirme également la conservation après actualisation et réouverture.
+- Nouvelle décision explicite : à l’ouverture du dossier, afficher le Dashboard. Cette décision remplace l’accueil Rapprochement prévu en V1.3. Elle vaut sur PC et mobile, également après actualisation puis réouverture du dossier.
+- V1.4.5 : redirection vers Dashboard après ouverture réussie ; navigation manuelle vers Rapprochement conservée. Aucun changement des comptes ni des calculs.
