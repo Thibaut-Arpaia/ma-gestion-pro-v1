@@ -178,3 +178,7 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Bilan mensuel/annuel des saisies : recettes TTC, dépenses TTC, trésorerie générée. Historique et saisies futures de la période inclus ; solde initial exclu des flux.
 - PDF via dialogue d’impression du navigateur : choisir Enregistrer en PDF. Aucun fichier comptable modifié.
 - Les enveloppes fiscales et leur rattachement à la période de déclaration restent un module distinct ; ce bilan de flux ne vaut pas déclaration.
+
+## Validation V1.3.3 et suite — 02/10/2026
+- Thibaut confirme bilan mensuel/annuel et aperçu PDF dans Opera, après ouverture Test3.
+- Suite exécutée sans nouveau GO : ajout au bilan du détail chronologique des recettes et dépenses (date, libellé, catégorie, TTC). Export PDF conserve ces lignes, sans modifier les comptes.
