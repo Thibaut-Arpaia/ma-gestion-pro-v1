@@ -109,3 +109,13 @@ export function duplicateGroups(rows){
  for(const row of rows||[]){if(row.cancelled)continue;const key=JSON.stringify([row.day,row.cents,normCategory(row.label)]);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);}
  return [...groups.values()].filter(group=>group.length>1);
 }
+
+export function periodReport(d,year,month=0){
+ if(!Number.isInteger(year)||year<1900||year>9999||!Number.isInteger(month)||month<0||month>12)throw new Error('Période invalide.');
+ const prefix=String(year)+(month?'-'+String(month).padStart(2,'0'):'');
+ const expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day.startsWith(prefix));
+ const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.startsWith(prefix));
+ const income=revenues.reduce((s,r)=>s+r.cents,0),outgoings=expenses.reduce((s,r)=>s+r.cents,0);
+ const monthly=Array.from({length:12},(_,i)=>{const key=String(year)+'-'+String(i+1).padStart(2,'0');const incoming=revenues.filter(r=>r.day.startsWith(key)).reduce((s,r)=>s+r.cents,0),outgoing=expenses.filter(r=>r.day.startsWith(key)).reduce((s,r)=>s+r.cents,0);return {month:i+1,income:incoming,outgoings:outgoing,cashflow:incoming-outgoing};});
+ return {income,outgoings,cashflow:income-outgoings,expenses,revenues,monthly};
+}

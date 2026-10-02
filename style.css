@@ -6,3 +6,17 @@
 input[type="checkbox"]{width:auto;min-height:0;margin-right:8px;display:inline-block}.row-actions{flex-wrap:wrap}input[type="file"]{max-width:100%}dialog p{overflow-wrap:anywhere}dialog button{margin:4px}nav{flex-wrap:wrap}
 .receipt-option{display:flex;align-items:center;gap:8px;margin-top:12px}.receipt-option input[type="checkbox"]{margin:0;flex:0 0 auto;width:18px;height:18px}
 .bank-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}.bank-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;border-top:1px solid #22526a;border-bottom:1px solid #22526a;padding:20px 0}.bank-summary h2{font-size:14px;font-weight:400;margin:0 0 8px}.bank-summary strong{font-size:23px;font-variant-numeric:tabular-nums}.bank-match,.bank-income{color:#3fffe2}.bank-expense{color:#ffb397}.bank-table-wrap{overflow:auto}.bank-table{width:100%;border-collapse:collapse;min-width:620px}.bank-table th,.bank-table td{padding:12px 8px;text-align:left;border-bottom:1px solid #22526a}.bank-table th{font-size:12px;color:var(--muted)}.bank-table td{font-size:14px}.bank-table input[type="date"]{width:160px}.bank-table input[type="checkbox"]{width:20px;height:20px}.bank-table td:nth-child(3){white-space:nowrap}@media(max-width:700px){.bank-summary{grid-template-columns:1fr}.bank-filters{grid-template-columns:1fr 1fr}}
+
+.receipt-option{flex-direction:row;gap:.6rem}
+@media print{
+ body.printing-report{background:white!important;color:black!important}
+ body.printing-report .topbar,body.printing-report .connection-bar,body.printing-report .hero,body.printing-report #toast,body.printing-report dialog{display:none!important}
+ body.printing-report .view:not(#dashboard){display:none!important}
+ body.printing-report #dashboard .content>*:not(#period-report){display:none!important}
+ body.printing-report #period-report{background:white!important;color:black!important;border:0;box-shadow:none}
+ body.printing-report #period-report .form-actions{display:none!important}
+ body.printing-report #period-report *{color:black!important}
+ body.printing-report .content{width:100%;max-width:none;margin:0;padding:0}
+ body.printing-report table{width:100%;border-collapse:collapse}
+ body.printing-report tr{break-inside:avoid}
+}

@@ -171,3 +171,10 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Dashboard : lister les groupes de doublons potentiels déjà enregistrés, séparément pour dépenses et recettes ; même date, montant et libellé normalisé. Boutons d'examen ouvrant l'opération précise par identifiant interne.
 - Lister les dépenses nécessitant un justificatif absent ; accès direct à la modification pour ajouter le ticket. Pas de suppression ni correction automatique.
 - Apprentissage : ne pas identifier une opération à supprimer uniquement par une référence recalculée. Vérifier son libellé, date et montant sur la capture actuelle.
+
+## V1.3.3 — Navigation et bilans
+- Ordre validé : Dashboard, Dépenses, Recettes, Rapprochement, Calculatrice, Réglages & sauvegardes.
+- Après validation, poursuivre immédiatement le travail autorisé ; ne pas attendre un nouveau GO.
+- Bilan mensuel/annuel des saisies : recettes TTC, dépenses TTC, trésorerie générée. Historique et saisies futures de la période inclus ; solde initial exclu des flux.
+- PDF via dialogue d’impression du navigateur : choisir Enregistrer en PDF. Aucun fichier comptable modifié.
+- Les enveloppes fiscales et leur rattachement à la période de déclaration restent un module distinct ; ce bilan de flux ne vaut pas déclaration.
