@@ -114,6 +114,18 @@ Priorite : a corriger avant validation propre de la V1.
 
 ## Points a tester ensuite
 
+### V1.2 validee et V1.3 preparee (02/10/2026)
+
+- Thibaut confirme sur son PC : ajout, telechargement, retrait, restauration et conservation du ticket apres reouverture. Bloc V1.2 valide sur ce scenario.
+- Anomalie ergonomique constatee : les cases "Retirer le ticket" et "Justificatif non requis" etaient au-dessus de leur texte, source de confusion. Correction V1.3 : case alignee a cote du texte, suppression des labels imbriques.
+- V1.3 : rapprochement bancaire manuel, filtres mois/plage/entrees/sorties/pointees, date reelle bancaire, solde pointe incluant le point de depart, solde reel saisi et ecart.
+- La comparaison utilise toutes les operations pointees jusqu'a la date choisie, meme si les filtres en masquent certaines. Les depenses historiques deja incluses dans le point de depart sont exclues.
+- Cloture possible uniquement si l'ecart est nul et les operations saisies jusqu'a cette date sont pointees. Montants, dates et pointages d'une periode cloturee proteges ; reouverture de la derniere cloture possible. Modifier le montant ou la date d'une operation hors cloture annule son pointage pour la reverifier.
+- Ouverture du dossier sur PC : affichage direct du tableau de rapprochement. Pointages et clotures inclus dans les sauvegardes existantes.
+- Verification : 15 tests Node, plus simulation DOM de l'application complete. Test disque renforce sur sauvegarde/restauration et reouverture des pointages, clotures et justificatifs. Controle visuel navigateur reel toujours non disponible.
+- Restent a integrer : animation/son de cloture configurable, detection des doublons, import bancaire et synchronisation mobile. Ne pas annoncer ces fonctions comme realisees.
+
+
 ### V1.2 - Justificatifs (02/10/2026)
 
 - V1.1 : paiements TVA et URSSAF puis reouverture Test3 confirmes par Thibaut. Solde 13 580 EUR, reserve URSSAF 2 761,67 EUR, argent libre 10 305 EUR.

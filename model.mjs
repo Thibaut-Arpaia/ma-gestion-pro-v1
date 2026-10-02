@@ -1,4 +1,5 @@
 import {validateReceipts,updateReceipt} from './receipts.mjs';
+import {validateBank,bankChange,protectClosures} from './reconciliation.mjs';
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
 export function money(v){if(!['string','number'].includes(typeof v))throw Error('Montant invalide.');const s=String(v).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(s))throw Error('Deux décimales au maximum.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||Math.abs(n)>1e11)throw Error('Montant hors limite.');return n;}
 export const commissionBrackets=[{to:3900000,rate:.70},{to:5900000,rate:.75},{to:7500000,rate:.80},{to:9000000,rate:.85},{to:Infinity,rate:.90}];
@@ -56,6 +57,7 @@ function renumber(d){
 export function validate(d){
  if(!d||d.format!=='ma-gestion-pro'||d.version!==1||!Number.isSafeInteger(d.revision)||d.revision<0||!Array.isArray(d.expenses))throw Error('Fichier Ma Gestion Pro invalide ou version incompatible.');
  validateReceipts(d.expenses);
+ validateBank(d);
  if(!Array.isArray(d.revenues))d.revenues=[];
  if(d.setup===null){if(d.expenses.length||d.revenues.length||d.next!==null)throw Error('Point de départ absent.');return d;}
  if(!d.setup||!date(d.setup.day)||!integer(d.setup.balance)||!integer(d.setup.first)||d.setup.first<1||!integer(d.next)||d.next<d.setup.first)throw Error('Paramètres invalides.');
@@ -86,9 +88,11 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  if(!row||!Number.isInteger(index)||index<0||!row.receiptTrash?.[index])throw Error('Justificatif introuvable.');
  const restored=row.receiptTrash.splice(index,1)[0];if(row.receipt)row.receiptTrash.push(row.receipt);row.receipt=restored;
  }
+ else if(['clearBank','closeBank','reopenBank'].includes(action))bankChange(d,action,p,money);
  else throw Error('Action inconnue.');
  if(action==='save'){const row=p.id?d.expenses.find(r=>r.id===p.id):d.expenses.at(-1);updateReceipt(row,p);}
- renumber(d);d.revision++;return validate(d);
+ if(action==='save'||action==='saveRevenue'){const collection=action==='save'?'expenses':'revenues';if(p.id){const old=source[collection].find(r=>r.id===p.id),row=d[collection].find(r=>r.id===p.id);if(old&&(old.cents!==row.cents||old.day!==row.day))delete row.clearedDay;}}
+ protectClosures(source,d);renumber(d);d.revision++;return validate(d);
 }
 export function visible(d){return d.expenses.filter(r=>!r.cancelled).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);}
 export function visibleRevenues(d){return d.revenues.filter(r=>!r.cancelled).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);}

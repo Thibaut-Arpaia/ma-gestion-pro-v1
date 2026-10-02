@@ -1,13 +1,15 @@
 import {calcCommission,commissionSummary,financeSummary} from './model.mjs';
 import {missingReceipts,validateReceipt,receiptLimit} from './receipts.mjs';
+import {initReconciliation} from './reconciliation-ui.mjs';
 'use strict';
 const $=s=>document.querySelector(s),fmt=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});let state=null,toastTimer;
-const receiptField=document.createElement('label');receiptField.className='wide';receiptField.textContent='Justificatif (JPEG, PNG ou PDF, 5 Mo maximum)';
-const receiptInput=document.createElement('input');receiptInput.type='file';receiptInput.accept='image/jpeg,image/png,application/pdf';receiptField.append(receiptInput);
+const bankUI=initReconciliation({getState:()=>state,save:async(action,p)=>{state=await call(action,p);render();},notify,fmt,today});
+const receiptField=document.createElement('div');receiptField.className='wide';const receiptHeading=document.createElement('label');receiptHeading.textContent='Justificatif (JPEG, PNG ou PDF, 5 Mo maximum)';receiptHeading.htmlFor='receipt-file';receiptField.append(receiptHeading);
+const receiptInput=document.createElement('input');receiptInput.id='receipt-file';receiptInput.type='file';receiptInput.accept='image/jpeg,image/png,application/pdf';receiptField.append(receiptInput);
 const receiptStatus=document.createElement('small');receiptField.append(receiptStatus);
 const receiptRemove=document.createElement('input');receiptRemove.type='checkbox';
-const receiptRemoveLabel=document.createElement('label');receiptRemoveLabel.textContent='Retirer le ticket (conservé dans la corbeille)';receiptRemoveLabel.prepend(receiptRemove);receiptField.append(receiptRemoveLabel);
-const receiptExempt=document.createElement('input');receiptExempt.type='checkbox';const exemptLabel=document.createElement('label');exemptLabel.textContent='Justificatif non requis';exemptLabel.prepend(receiptExempt);receiptField.append(exemptLabel);
+const receiptRemoveLabel=document.createElement('label');receiptRemoveLabel.className='receipt-option';receiptRemoveLabel.textContent='Retirer le ticket (conservé dans la corbeille)';receiptRemoveLabel.prepend(receiptRemove);receiptField.append(receiptRemoveLabel);
+const receiptExempt=document.createElement('input');receiptExempt.type='checkbox';const exemptLabel=document.createElement('label');exemptLabel.className='receipt-option';exemptLabel.textContent='Justificatif non requis';exemptLabel.prepend(receiptExempt);receiptField.append(exemptLabel);
 $('#expense-form .fields').append(receiptField);
 const receiptMetric=document.createElement('article');const receiptMetricBody=document.createElement('div');const receiptMetricTitle=document.createElement('h2');receiptMetricTitle.textContent='Tickets à retrouver';const receiptCount=document.createElement('strong');receiptMetricBody.append(receiptMetricTitle,receiptCount);receiptMetric.append(receiptMetricBody);$('.metrics').append(receiptMetric);
 function resetReceipt(){receiptInput.value='';receiptRemove.checked=false;receiptExempt.checked=false;receiptStatus.textContent='';receiptRemoveLabel.hidden=true;}
@@ -30,7 +32,7 @@ function render(){if(!state)return;const year=new Date().getFullYear(),elapsed=n
  text('#list-count',state.expenses.length);text('#revenue-list-count',state.revenues.length);list('#recent',state.expenses.slice(0,3),false);filterList();filterRevenueList();text('#backup-status',state.backupFolder?'Copie de l’état précédent avant chaque changement':'Aucun dossier choisi');text('#data-path','Données : '+state.dataPath);text('#folder-path',state.backupFolder?'Sauvegardes : '+state.backupFolder:'Choisis un dossier pour activer les copies automatiques.');
  text('#connection-status',state.connected?'Dossier ouvert : '+state.dataPath:'Ouvre ton dossier pour retrouver tes comptes.');const setupForm=$('#setup-form');Array.from(setupForm.elements).forEach(e=>e.disabled=!state.connected||!!state.setup);if(!state.setup){text('#setup-summary','');setupForm.reset();setupForm.elements.day.value=today();}if(state.setup){const f=$('#setup-form');f.elements.day.value=state.setup.day;f.elements.balance.value=(state.setup.balance/100).toFixed(2);f.elements.next.value=state.setup.first;Array.from(f.elements).forEach(e=>e.disabled=true);text('#setup-summary','Point de départ enregistré.');}
  $('#save-expense').disabled=!state.setup;$('#save-revenue').disabled=!state.setup;text('#commission-cumul',`Cumul automatique ${year} : ${fmt.format(commissions.baseHt/100)} HT, calculé depuis ${commissions.count} recette${commissions.count>1?'s':''} Commission immobilière.`);historyHint();}
-function filterList(){if(!state)return;receiptCount.textContent=missingReceipts(state.expenses);const q=$('#search').value.toLocaleLowerCase('fr');list('#expense-list',state.expenses.filter(r=>`${r.label} ${r.category} ${r.ref??''}`.toLocaleLowerCase('fr').includes(q)),true);}
+function filterList(){if(!state)return;bankUI.render();receiptCount.textContent=missingReceipts(state.expenses);const q=$('#search').value.toLocaleLowerCase('fr');list('#expense-list',state.expenses.filter(r=>`${r.label} ${r.category} ${r.ref??''}`.toLocaleLowerCase('fr').includes(q)),true);}
 $('#search').addEventListener('input',filterList);
 function filterRevenueList(){if(!state)return;const q=$('#revenue-search').value.toLocaleLowerCase('fr');list('#revenue-list',state.revenues.filter(r=>`${r.label} ${r.category}`.toLocaleLowerCase('fr').includes(q)),true,'revenue');}
 $('#revenue-search').addEventListener('input',filterRevenueList);
@@ -54,6 +56,6 @@ $('#setup-form').elements.day.value=today();$('#setup-form').onsubmit=async e=>{
 async function backup(choose=false){try{const data=await call('backup',{choose});if(data.cancelled)return;state=data;render();notify('Sauvegarde créée : '+data.file);}catch(e){notify(e.message,true);}}
 function bindClick(id,fn){const el=$(id);if(el)el.addEventListener('click',fn);}
 bindClick('#backup-main',()=>backup());bindClick('#backup-now',()=>backup());
-async function connect(e){const button=e?.currentTarget;try{if(button)button.disabled=true;notify('Ouverture du sélecteur de dossier...');state=await call('connect');resetForm();render();notify('Dossier ouvert. Les comptes restent enregistrés sur ce PC.');}catch(e){notify(e.message,true);}finally{if(button)button.disabled=false;}}
+async function connect(e){const button=e?.currentTarget;try{if(button)button.disabled=true;notify('Ouverture du sélecteur de dossier...');state=await call('connect');resetForm();resetRevenueForm();bankUI.reset();render();if(state.setup&&window.innerWidth>=1000)view('bank');notify('Dossier ouvert. Les comptes restent enregistrés sur ce PC.');}catch(e){notify(e.message,true);}finally{if(button)button.disabled=false;}}
 bindClick('#choose-backup',connect);bindClick('#connect',connect);bindClick('#restore',async()=>{try{const data=await call('restore');if(data.cancelled)return;state=data;resetForm();render();notify('Sauvegarde restaurée. Une copie de l’état précédent a été conservée.');}catch(e){notify(e.message,true);}});
 resetForm();resetRevenueForm();call('state').then(data=>{state=data;render();}).catch(e=>notify(e.message,true));

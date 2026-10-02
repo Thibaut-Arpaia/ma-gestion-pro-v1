@@ -37,6 +37,9 @@ test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans fa
  assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
  selection=path.join(root,'invalid.json');await fs.writeFile(selection,'{}');await assert.rejects(b.run('restore'));assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
  await b.run('remove',1);assert.equal((await b.run('state')).expenses.length,0);assert.equal((await b.run('state')).next,100);
+ await b.run('save',{...expense,receipt});await b.run('clearBank',{kind:'expense',id:2,day:'2026-09-15'});await b.run('closeBank',{end:'2026-09-30',balance:'957.50'});
+ const c=await import('../storage.mjs?test3');await c.run('connect');assert.equal((await c.run('state')).bankClosures.length,1);assert.equal((await c.run('state')).expenses[0].clearedDay,'2026-09-15');
+ const closedBackup=await c.run('backup');selection=path.join(root,'sauvegardes',closedBackup.file);await c.run('reopenBank',{});assert.equal((await c.run('state')).bankClosures.length,0);await c.run('restore');assert.equal((await c.run('state')).bankClosures.length,1);assert.deepEqual((await c.run('state')).expenses[0].receipt,receipt);
  }finally{await fs.rm(root,{recursive:true,force:true});}
 });
 test('Recettes : création, modification, suppression et validation',()=>{
