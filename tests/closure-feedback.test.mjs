@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {saveBankAction} from '../closure-feedback.mjs';
+import {saveBankAction} from '../reconciliation-ui.mjs';
 test('Clôture : confettis seulement après enregistrement réussi, jamais en cas d’erreur disque',async()=>{
  let resolve;const write=new Promise(r=>resolve=r),events=[];
  const pending=saveBankAction(()=>write,'closeBank',{},()=>events.push('celebration'));

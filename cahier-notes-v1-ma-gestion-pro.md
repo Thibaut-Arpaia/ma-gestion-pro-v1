@@ -264,3 +264,15 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - V1.4.7 ajoute le module au workflow et vérifie les dépendances JS/HTML/CSS du dossier public avant publication (verify-public.mjs).
 - 31 tests Node réussis ; préparation réelle du dossier public vérifiée. Suppression volontaire du module dans le dossier temporaire : contrôle refuse correctement la publication incomplète.
 - Installation requiert aussi mise à jour de .github/workflows/pages.yml et ajout de verify-public.mjs. Pas de modification des comptes. Déploiement distant et animation PC encore à vérifier.
+
+## V1.4.8 — récupération après 404 persistant — 02/10/2026
+- Capture utilisateur : V1.4.7 visible mais closure-feedback.mjs toujours 404, tous les onglets bloqués par non-initialisation JavaScript. Ne pas attribuer ce décalage à une mauvaise manipulation sans vérifier le dépôt distant.
+- Correctif autonome : intégrer le code des confettis dans reconciliation-ui.mjs, fichier déjà publié par le workflow historique. Retirer l’import et le module séparé. Fonctionnalité visuelle et option conservées.
+- 31 tests réussis. Contrôle de toutes les dépendances dans un dossier public constitué avec la liste de l’ancien workflow : réussi. Aucun nouveau module nécessaire au démarrage.
+- Publication et parcours PC à confirmer ; aucun changement des fichiers de comptes.
+
+## Exigence renforcée avant ZIP et contrôles V1.4.8 — 02/10/2026
+- Thibaut exige tous les tests possibles avant livraison du ZIP. Ne pas utiliser le test PC pour remplacer les contrôles locaux réalisables.
+- 34 tests passent, avec trois scénarios d’interface DOM simulée sur clôture/animation cinq secondes, réouverture, option désactivée/préférence, erreur disque, écart non nul et réduction des animations.
+- Préparation publique avec ancienne liste de fichiers réussie ; serveur HTTP local : tous les fichiers JS/HTML/CSS retournent 200 avec contenu exact et types MIME corrects. Pas d’import du module supprimé.
+- Limite explicite : navigateur réel absent ; téléchargement Chromium tenté et échoué. Démarrage complet de l’application et clics sur tous les onglets dans Opera non vérifiés ici. Ne pas annoncer tous les contrôles navigateur comme réalisés.
