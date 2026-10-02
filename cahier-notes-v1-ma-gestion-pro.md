@@ -182,3 +182,12 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 ## Validation V1.3.3 et suite — 02/10/2026
 - Thibaut confirme bilan mensuel/annuel et aperçu PDF dans Opera, après ouverture Test3.
 - Suite exécutée sans nouveau GO : ajout au bilan du détail chronologique des recettes et dépenses (date, libellé, catégorie, TTC). Export PDF conserve ces lignes, sans modifier les comptes.
+
+## V1.3.4 validée et V1.4 — dépenses récurrentes
+- PDF réel reçu de Test3 : recettes 15 200 €, dépenses 2 620 €, trésorerie générée 12 580 €. Avec départ 1 000 €, solde suivi 13 580 €. Deux pages lisibles, toutes les opérations présentes.
+- Récurrences mensuelles dans Réglages : libellé, catégorie, TTC, TVA, paiement, jour et premier mois ; modification, pause et réactivation.
+- Préparer le virement personnel de 2 000 € ne crée aucune opération. TVA forcée à zéro ; sortie personnelle, sans déduction.
+- Chaque échéance se crée sur confirmation explicite ; aucun prélèvement automatique ni pointage bancaire automatique. Jour absent ramené au dernier jour du mois.
+- Prévention : même récurrence/mois jamais générée deux fois, même après suppression de la dépense. Dépense manuelle identique bloque la génération ; période clôturée protégée.
+- Les échéances peuvent être créées pour un mois choisi à venir ; elles sont incluses dans le bilan des saisies et restent non pointées.
+- Les anciens dossiers restent compatibles. Sauvegarde et restauration incluent les récurrences. Validation : 26 tests Node et parcours d’interface simulée. Essai réel du nouveau panneau à faire sur PC.
