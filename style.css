@@ -20,3 +20,9 @@ input[type="checkbox"]{width:auto;min-height:0;margin-right:8px;display:inline-b
  body.printing-report table{width:100%;border-collapse:collapse}
  body.printing-report tr{break-inside:avoid}
 }
+
+.panel-toggle{display:flex;align-items:center;gap:.7rem;width:100%;padding:.25rem 0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.panel-toggle::before{content:'▾';color:#00cfe8;font-size:1.1em}
+.panel-toggle[aria-expanded="false"]::before{content:'▸'}
+.panel-toggle:focus-visible{outline:2px solid #00cfe8;outline-offset:5px}
+@media print{body.printing-report #period-report .collapsible-body[hidden]{display:block!important}body.printing-report .panel-toggle::before{display:none}body.printing-report .panel-toggle{padding:0}}

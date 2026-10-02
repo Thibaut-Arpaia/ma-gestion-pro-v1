@@ -191,3 +191,9 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Prévention : même récurrence/mois jamais générée deux fois, même après suppression de la dépense. Dépense manuelle identique bloque la génération ; période clôturée protégée.
 - Les échéances peuvent être créées pour un mois choisi à venir ; elles sont incluses dans le bilan des saisies et restent non pointées.
 - Les anciens dossiers restent compatibles. Sauvegarde et restauration incluent les récurrences. Validation : 26 tests Node et parcours d’interface simulée. Essai réel du nouveau panneau à faire sur PC.
+
+## V1.4.1 — Blocs repliables du Dashboard
+- Décision utilisateur : Bilan, Dernières dépenses et Contrôles à examiner déployables au clic sur leur titre, réduits au deuxième clic, avec flèche.
+- Boutons natifs accessibles au clavier, état aria-expanded et contenu associé ; chaque bloc indépendant, ouvert initialement. État conservé pendant les mises à jour dans la session.
+- Tout voir reste indépendant de l’ouverture du bloc Dernières dépenses. L’impression PDF affiche le bilan intégral, même si son bloc est replié.
+- Test V1.4 sur PC : dépense Test abonnement de 24 € au 15/10/2026 créée dans Test3, seconde génération bloquée confirmée ; ticket manquant attendu. Réouverture des récurrences non encore confirmée.

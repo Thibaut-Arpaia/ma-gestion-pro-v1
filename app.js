@@ -39,6 +39,17 @@ const controlsPanel=document.createElement('section');controlsPanel.className='p
 const controlsHeading=document.createElement('h2');controlsHeading.textContent='Contrôles à examiner';
 const controlsHint=document.createElement('p');controlsHint.className='muted';controlsHint.textContent='Doublons potentiels et justificatifs manquants. Aucune suppression automatique.';
 const controlsBody=document.createElement('div');controlsPanel.append(controlsHeading,controlsHint,controlsBody);$('#dashboard .content').append(controlsPanel);
+function makeCollapsible(panel,id){
+ const heading=panel.querySelector('h2');let header=heading.parentElement;
+ if(header===panel){header=document.createElement('div');header.className='panel-head';panel.insertBefore(header,heading);header.append(heading);}
+ const button=document.createElement('button');button.type='button';button.className='panel-toggle';button.textContent=heading.textContent;button.setAttribute('aria-expanded','true');button.setAttribute('aria-controls',id);heading.replaceChildren(button);
+ const body=document.createElement('div');body.id=id;body.className='collapsible-body';
+ for(const child of [...panel.childNodes])if(child!==header)body.append(child);panel.append(body);
+ button.addEventListener('click',()=>{body.hidden=!body.hidden;button.setAttribute('aria-expanded',String(!body.hidden));});
+}
+makeCollapsible($('#recent').closest('section'),'recent-content');
+makeCollapsible(reportPanel,'report-content');
+makeCollapsible(controlsPanel,'controls-content');
 function renderControls(){
  controlsBody.replaceChildren();if(!state?.connected){controlsBody.textContent='Ouvre ton dossier pour consulter les contrôles.';return;}
  const groups=[...duplicateGroups(state.expenses).map(rows=>({rows,type:'expense'})),...duplicateGroups(state.revenues).map(rows=>({rows,type:'revenue'}))];
