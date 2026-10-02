@@ -197,3 +197,15 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Boutons natifs accessibles au clavier, état aria-expanded et contenu associé ; chaque bloc indépendant, ouvert initialement. État conservé pendant les mises à jour dans la session.
 - Tout voir reste indépendant de l’ouverture du bloc Dernières dépenses. L’impression PDF affiche le bilan intégral, même si son bloc est replié.
 - Test V1.4 sur PC : dépense Test abonnement de 24 € au 15/10/2026 créée dans Test3, seconde génération bloquée confirmée ; ticket manquant attendu. Réouverture des récurrences non encore confirmée.
+
+## V1.4.2 — Clarifier les récurrences
+- Thibaut confirme les blocs repliables ; le virement personnel a été créé après repérage du second bouton.
+- Anomalie ergonomique : confusion entre sauvegarder le modèle mensuel et créer sa dépense.
+- Libellés : « Enregistrer le modèle » puis « Créer la dépense du JJ/MM/AAAA ». Message après sauvegarde indiquant explicitement la seconde étape.
+- Le parcours simulé crée le virement personnel et vérifie TTC 2 000 €, TVA 0 €, justificatif non requis.
+
+## V1.4.3 — Navigation simplifiée, décision du 02/10/2026
+- Retirer du Dashboard Dernières dépenses et Bilan. Dépenses restent dans le menu existant.
+- Bilan devient un onglet indépendant sous Calculatrice, avant Réglages & sauvegardes.
+- Ordre définitif actuel : Dashboard, Dépenses, Recettes, Rapprochement, Calculatrice, Bilan, Réglages & sauvegardes.
+- Contrôles à examiner reste repliable sur le Dashboard. Bilan affiche directement ses filtres et l’export PDF.

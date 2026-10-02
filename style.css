@@ -11,8 +11,8 @@ input[type="checkbox"]{width:auto;min-height:0;margin-right:8px;display:inline-b
 @media print{
  body.printing-report{background:white!important;color:black!important}
  body.printing-report .topbar,body.printing-report .connection-bar,body.printing-report .hero,body.printing-report #toast,body.printing-report dialog{display:none!important}
- body.printing-report .view:not(#dashboard){display:none!important}
- body.printing-report #dashboard .content>*:not(#period-report){display:none!important}
+ body.printing-report .view:not(#reports){display:none!important}
+ body.printing-report #reports>*:not(#period-report){display:none!important}
  body.printing-report #period-report{background:white!important;color:black!important;border:0;box-shadow:none}
  body.printing-report #period-report .form-actions{display:none!important}
  body.printing-report #period-report *{color:black!important}
