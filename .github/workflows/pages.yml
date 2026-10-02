@@ -31,7 +31,7 @@ jobs:
         run: |
           node --check app.js
           node --check storage.mjs
-          node --test tests/local.test.mjs
+          node --test tests/*.test.mjs
 
       - uses: actions/configure-pages@v5
 
@@ -39,7 +39,7 @@ jobs:
         run: |
           mkdir public
           touch public/.nojekyll
-          cp index.html app.js style.css model.mjs storage.mjs public/
+          cp index.html app.js style.css model.mjs storage.mjs receipts.mjs public/
           cp -R assets public/assets
 
       - uses: actions/upload-pages-artifact@v3
