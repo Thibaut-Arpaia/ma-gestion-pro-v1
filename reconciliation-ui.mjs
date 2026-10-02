@@ -1,9 +1,11 @@
+import {initClosureFeedback,saveBankAction} from './closure-feedback.mjs';
 import {bankRows,bankSummary} from './reconciliation.mjs';
 export function initReconciliation({getState,save,notify,fmt,today}){
  const nav=document.createElement('button');nav.dataset.view='bank';nav.textContent='Rapprochement';document.querySelector('nav').insertBefore(nav,document.querySelector('nav [data-view=calculator]'));
  const section=document.createElement('section');section.id='bank';section.className='view content page';section.hidden=true;
  section.innerHTML='<div class="page-heading"><h1>Rapprochement bancaire</h1></div><div class="bank-filters"><label>Mois<input id="bank-month" type="month"></label><label>Du<input id="bank-from" type="date"></label><label>Au<input id="bank-end" type="date"></label><label>Opérations<select id="bank-kind"><option value="all">Toutes</option><option value="revenue">Entrées</option><option value="expense">Sorties</option></select></label><label>Pointage<select id="bank-status"><option value="all">Toutes</option><option value="pending">À pointer</option><option value="cleared">Pointées</option></select></label></div><div class="bank-summary"><div><h2>Solde initial + opérations pointées au <span id="bank-cutoff"></span></h2><strong id="bank-expected">—</strong></div><label>Solde bancaire réel à cette date (€)<input id="bank-balance" inputmode="decimal" placeholder="Solde du relevé"></label><div><h2>Écart (banque − solde pointé)</h2><strong id="bank-difference">—</strong></div></div><p id="bank-pending" role="status"></p><div class="bank-table-wrap"><table class="bank-table"><thead><tr><th>Date saisie</th><th>Opération</th><th>Entrée / sortie</th><th>Date réelle banque</th><th>Pointée</th></tr></thead><tbody id="bank-rows"></tbody></table></div><div class="form-actions"><button id="bank-close" class="primary" type="button">Clôturer la période</button><button id="bank-reopen" type="button" hidden>Rouvrir la dernière clôture</button></div><p id="bank-closed" class="path"></p>';
  document.querySelector('main').append(section);
+ const celebrate=initClosureFeedback(section);
  const $=id=>section.querySelector(id),end=$('#bank-end'),from=$('#bank-from'),balance=$('#bank-balance');
  end.value=today();from.value=today().slice(0,7)+'-01';$('#bank-month').value=today().slice(0,7);
  function selectMonth(){const month=$('#bank-month').value;if(!/^\d{4}-\d{2}$/.test(month))return;const [y,m]=month.split('-').map(Number);from.value=month+'-01';const last=new Date(Date.UTC(y,m,0)).toISOString().slice(0,10);end.value=last>today()?today():last;balance.value='';render();}
@@ -11,7 +13,7 @@ export function initReconciliation({getState,save,notify,fmt,today}){
  for(const id of ['#bank-from','#bank-end','#bank-kind','#bank-status'])$(id).addEventListener('change',render);
  balance.addEventListener('input',renderSummary);
  let busy=false;
- async function mutate(action,p){if(busy)return;busy=true;render();try{await save(action,p);notify(action==='closeBank'?'Période clôturée.':action==='reopenBank'?'Dernière clôture rouverte.':'Pointage enregistré.');}catch(e){notify(e.message,true);}finally{busy=false;render();}}
+ async function mutate(action,p){if(busy)return;busy=true;render();try{await saveBankAction(save,action,p,celebrate);notify(action==='closeBank'?'Période clôturée.':action==='reopenBank'?'Dernière clôture rouverte.':'Pointage enregistré.');}catch(e){notify(e.message,true);}finally{busy=false;render();}}
  $('#bank-close').onclick=()=>{if(window.confirm('Clôturer les opérations jusqu’au '+end.value+' ? Les montants et pointages seront verrouillés.'))mutate('closeBank',{end:end.value,balance:balance.value});};
  $('#bank-reopen').onclick=()=>{if(window.confirm('Rouvrir la dernière clôture pour modifier cette période ?'))mutate('reopenBank',{});};
  function renderSummary(){const d=getState();const button=$('#bank-close');button.disabled=true;$('#bank-reopen').hidden=!d?.bankClosures?.length;$('#bank-reopen').disabled=busy;

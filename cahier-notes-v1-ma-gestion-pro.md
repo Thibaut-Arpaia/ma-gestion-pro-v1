@@ -228,3 +228,33 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Thibaut confirme le parcours demandé : arrivée sur Dashboard après ouverture Test3, accès manuel au Rapprochement, retour au Dashboard après actualisation puis réouverture.
 - Indicateurs de référence conservés : solde 13 580 €, TVA 513,33 €, URSSAF 2 761,67 €, disponible 10 305 €.
 - Reste à confirmer pour la ligne manuelle « Test échéance future » du 15/10/2026 à 24 € : présence dans le bilan d’octobre, puis suppression de cette seule ligne d’essai. Ne pas supprimer la récurrence « Test abonnement » ni une autre opération.
+
+## Fin du test dépense future — 02/10/2026
+- Thibaut confirme présence de « Test échéance future » du 15/10/2026 à 24 € dans Bilan octobre, suppression de cette seule ligne, disponible conservé à 10 305 € et compteur tickets revenu à 1.
+- Parcours PC dépense future terminé. Prochain contrôle ciblé : recette future « Autre recette » de 1 200 € TTC dont 200 € TVA, date 15/10/2026 ; les quatre indicateurs du jour doivent rester identiques. Ce prochain contrôle PC n’est pas encore effectué.
+
+## Audit des opérations futures terminé — validation PC — 02/10/2026
+- Thibaut confirme ajout de « Test recette future », Autre recette, 15/10/2026, 1 200 € TTC dont 200 € TVA : les quatre montants du Dashboard restent inchangés.
+- Il confirme ensuite présence dans Bilan octobre et suppression de cette seule recette d’essai, sans variation des indicateurs du jour.
+- Référence finale : solde 13 580 €, TVA 513,33 €, URSSAF 2 761,67 €, disponible 10 305 €.
+- Audit demandé terminé : correction V1.4.4 vérifiée par 29 tests automatisés et parcours PC sur dépense et recette futures, bilan, nettoyage et réouverture. Accueil Dashboard V1.4.5 également validé sur PC.
+- Aucun nouveau changement logiciel dans cette mise à jour du carnet. Inutile de réinstaller V1.4.5 pour ces notes.
+
+## Clarification et confirmation du nettoyage recette — 02/10/2026
+- Capture du bilan : dépenses revenues à 2 620 €, mais recette future de 1 200 € encore active dans Détail des recettes, total recettes 16 400 €. L’utilisateur parlait d’une suppression dans Dépenses ; aucune anomalie de calcul établie.
+- Après indication de supprimer la ligne dans Recettes, Thibaut confirme : recettes octobre 15 200 €, dépenses 2 620 €, trésorerie générée 12 580 €.
+- Clarification : seules les opérations futures actives figurent dans le bilan. Les opérations supprimées sont exclues des lignes et des totaux.
+- Prochain point PC déjà prévu au carnet V1.4.1, non explicitement confirmé : conservation des modèles de récurrence après actualisation/réouverture. Contrôler dans Réglages sans générer de nouvelle échéance.
+
+## Récurrences — validations PC complémentaires — 02/10/2026
+- Première capture : dossier nommé « sauvegardes » ouvert, aucune récurrence. Ce constat ne prouve pas une perte dans Test3. Après sélection du dossier Test3, Thibaut confirme retrouver Test abonnement 24 € et Virement personnel 2 000 €.
+- Conservation des deux modèles après réouverture validée pour ce parcours.
+- Capture suivante : Test abonnement 24 € En pause et création d’échéance désactivée, bouton Réactiver présent. Thibaut confirme ensuite la réactivation sans création de dépense.
+- Pause/réactivation validée. Aucun changement logiciel nécessaire pour ces contrôles.
+
+## V1.4.6 — retour visuel de clôture — 02/10/2026
+- Rappel utilisateur : poursuivre le travail déjà autorisé après validation ; ne pas s’arrêter à un compte rendu de tests.
+- Prochain bloc prévu V1.3 : animation/son de clôture configurable. Partie visuelle intégrée : confettis cinq secondes après écriture réussie de closeBank. Case dans Rapprochement, préférence locale au navigateur conservée. Respect de réduction des animations et arrêt si page masquée ; aucun blocage des clics.
+- Ni pointage, ni réouverture, ni lecture de dossier ne déclenchent l’effet. Échec disque : pas de confettis ; erreur visuelle : clôture réussie conservée, aucun nouvel enregistrement.
+- 31 tests Node passent, dont deux nouveaux scénarios d’ordre d’exécution et de gestion des erreurs. Syntaxe JavaScript vérifiée. Essai visuel PC non réalisé ici.
+- Son d’applaudissements Pixabay 237756 et option muet encore à intégrer ; cette version n’ajoute aucun son. Calculs et comptes inchangés.
