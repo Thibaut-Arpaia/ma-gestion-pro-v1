@@ -14,6 +14,23 @@ Objectif : suivre les tests reels de la V1, les corrections a faire et les decis
 - Incident du 01/10/2026 : la regle ci-dessus a ete immediatement enfreinte pendant le test calculatrice, avec une annonce erronee du cumul attendu apres modification d'une recette conseiller TTC a 28 000 EUR. Bonne valeur : 33 333,33 EUR HT, car 28 000 TTC / 1,20 = 23 333,33 HT, puis 23 333,33 / 70 % = 33 333,33 HT. Consigne renforcee : ne plus annoncer de montant attendu sans calcul explicite verifie.
 - Incident du 01/10/2026 : pendant les tests dashboard du dossier 3, ne plus oublier le solde de depart dans les montants attendus. Regle renforcee : tout calcul de dashboard doit partir de l'etat complet du dossier ouvert, notamment point de depart + recettes actives - depenses actives - reserves TVA/URSSAF. Exemple de controle : avec un point de depart a 1 000 EUR, une recette "Autre recette" de 1 200 EUR TTC avec 200 EUR de TVA, puis une recette "Commission immobiliere" de 14 000 EUR TTC conseiller, le solde suivi attendu est 16 200 EUR, la TVA a reserver 2 533,33 EUR, l'URSSAF a reserver 3 261,67 EUR et l'argent reellement libre 10 405 EUR.
 
+## Regle permanente anti-erreurs de livraison
+
+- Avant toute modification, relire ce carnet et tenir compte des erreurs deja commises sur Ma Gestion Pro.
+- Règle de collaboration : Thibaut ne doit pas avoir à connaître les méthodes de développement pour éviter les erreurs techniques. L’assistant doit porter la méthode, anticiper les risques, signaler les incohérences, proposer les garde-fous utiles et s’auto-corriger avant de faire perdre du temps à l’utilisateur.
+- Quand Thibaut formule une demande métier ou une manipulation de test, l’assistant doit traduire en action technique sûre, vérifier la cohérence avec le projet et expliquer seulement ce qui est nécessaire pour décider ou agir.
+- Si une demande utilisateur risque de casser le workflow, les données, le packaging GitHub ou une règle déjà validée, l’assistant doit le dire clairement et proposer une option plus sûre.
+- Ne pas faire reposer sur Thibaut la responsabilité de repérer les erreurs de développement, de packaging, de workflow ou de tests. Son rôle est de valider le comportement réel sur son PC et de donner les retours métier.
+- Ne jamais livrer une correction, un fichier ou un ZIP sans avoir controle le resultat et le fonctionnement reel accessibles localement.
+- Ne pas generer un ZIP a chaque micro-correction : cumuler les petits changements et livrer uniquement lorsqu'un lot merite un test GitHub/PC.
+- Avant tout ZIP GitHub, verifier qu'il s'agit d'un ZIP complet du projet, pas seulement du dossier public.
+- Le ZIP GitHub complet doit contenir au minimum : `.github/workflows/pages.yml`, `index.html`, `app.js`, `style.css`, `model.mjs`, `storage.mjs`, `receipts.mjs`, `reconciliation.mjs`, `reconciliation-ui.mjs`, `assets/`, `tests/` et `verify-public.mjs`.
+- Avant livraison, simuler localement le workflow GitHub : `node --check app.js`, `node --check storage.mjs`, `node --test tests/*.test.mjs`, suppression/recreation de `public`, copie des fichiers publics, puis `node verify-public.mjs public`.
+- Si le workflow recree `public`, il doit faire `rm -rf public` avant `mkdir public`.
+- Apres creation d'un ZIP, lister son contenu, verifier le nombre de fichiers et confirmer explicitement : tests OK, workflow simule OK, ZIP complet OK, nombre de fichiers, type de ZIP "ZIP complet GitHub".
+- Si GitHub Actions echoue, lire l'erreur exacte du run avant de proposer une correction. Ne pas demander a Thibaut d'enchainer les uploads a l'aveugle.
+- Incident V2.2 du 07/10/2026 : erreur de livraison avec un premier ZIP contenant seulement `public/`, alors que la procedure GitHub de Thibaut necessitait le projet complet. Ne plus reproduire cette erreur.
+
 ## Etat des tests valides
 
 - Acces au logiciel depuis GitHub Pages : OK.
@@ -324,6 +341,22 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Test ajouté sur le Bilan fiscal : une TVA payée, un paiement URSSAF ou une dépense classique supprimés restent exclus des provisions et des enveloppes cumulées.
 - Publication locale : `public/` resynchronisé avec les sources testées, y compris `dashboard-visual-v2.png`, pour éviter un ZIP basé sur d’anciens fichiers.
 - Lot nommé V2.2 côté interface et note de version ajoutée. ZIP non généré à ce stade : attendre le feu vert de Thibaut pour lancer la livraison/test GitHub.
+- Correction livraison V2.2 : le premier ZIP ne contenait que la publication statique. Nouveau ZIP complet généré avec workflow GitHub, tests, sources, assets et dossier public. Workflow corrigé avec `rm -rf public` avant `mkdir public` pour éviter l’échec GitHub Actions si `public/` existe déjà.
+- Documentation projet : README remis à niveau en V2.2 avec contenu fonctionnel actuel, procédure ZIP complet GitHub et contrôles obligatoires avant livraison.
+- Test de non-régression ajouté : le workflow doit conserver `rm -rf public` avant `mkdir public`, exécuter les tests, vérifier `public`, et le README doit mentionner tous les fichiers requis du ZIP complet GitHub.
+- Workflow GitHub renforcé : vérification syntaxique de tous les modules applicatifs (`app.js`, `model.mjs`, `storage.mjs`, `receipts.mjs`, `reconciliation.mjs`, `reconciliation-ui.mjs`, `verify-public.mjs`) avant les tests. Le test de livraison verrouille cette liste.
 - Aucun changement du Dashboard, des fichiers de comptes, des sauvegardes ou du rapprochement.
 - Tests renforcés sur mois, année et cumul fin de période, avec variantes de saisie TVA/URSSAF. Contrôles locaux OK.
 - Limite : le navigateur distant refuse les URL locales par politique de sécurité. Ne pas annoncer le rendu Opera comme vérifié avant l’essai réel de Thibaut.
+
+## Lot en cours V3 — intégration visuelle immobilier clair — 07/10/2026
+- Décision validée : abandonner l’ancien univers Countach / Lucky Dinner pour la prochaine V3 et partir sur une identité plus claire, premium immobilier.
+- Fond V3 retenu : maison contemporaine à gauche, terrasse, vue mer, ville au loin, soleil couchant rétro, sans voiture, sans ordinateur, sans motif de points pop art.
+- Méthode verrouillée : le fond d’écran est une image séparée ; l’interface, le menu, les modules, les textes, les chiffres, les icônes et les espacements restent codés en HTML/CSS pour éviter que la génération d’image les modifie.
+- Menu gauche à conserver dans l’esprit de la référence 1E light C : barre verticale foncée, angles très arrondis, logo en haut, boutons empilés avec icône et libellé, bouton actif bleu/gris lumineux.
+- Modules à conserver dans l’esprit de la référence 1E light C : cartes gris bleuté clair, angles arrondis, bonne lisibilité, contraste net entre titres, chiffres et informations secondaires.
+- Intégration préparée : ajout de `assets/dashboard-background-v3.png`, utilisation du fond dans le Dashboard et nouvelle surcouche CSS V3. Aucun changement métier, aucun changement de calcul, aucun changement du format des comptes.
+- Dashboard V3 : ajout d’un accès rapide « Ajouter une recette » à côté de « Ajouter une dépense », pour équilibrer la saisie des sorties et des commissions depuis l’accueil. Aucun changement de logique de saisie.
+- Dashboard V3 : le compteur « Tickets à retrouver » reçoit une icône et une aide courte, comme les autres indicateurs, afin de garder les huit cartes homogènes.
+- `public/` resynchronisé avec les sources modifiées. ZIP non généré : cumuler encore les prochains ajustements et livrer seulement quand le lot V3 sera pertinent.
+- Contrôles réalisés : syntaxes JavaScript OK, tests Node OK, vérification de `public/` OK. Limite : rendu navigateur réel non vérifié ici, car l’environnement refuse les URL locales ; contrôle PC à faire au moment du prochain ZIP.

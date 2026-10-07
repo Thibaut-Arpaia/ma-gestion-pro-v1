@@ -1,28 +1,82 @@
-# Ma Gestion Pro — V1 web pour GitHub Pages
+# Ma Gestion Pro — V3 web pour GitHub Pages
 
-Version préparée le 25 septembre 2026. Pas encore publiée ni validée sur le PC utilisateur.
+Version V3 préparée le 7 octobre 2026. Validation PC à effectuer après publication.
 
 ## Ce qui est inclus
 
-Interface web avec décor Lucky Dinner, dépenses, point de départ, modification, annulation, références continues, statistiques de dépenses, sauvegarde et restauration JSON. Le travail s'enregistre dans un dossier réel du PC choisi par l'utilisateur. Aucun service serveur ni connexion ChatGPT, Google, GitHub ou pCloud n'est nécessaire à l'usage de l'application une fois publiée.
+- Dashboard avec visuel immobilier clair V3, menu gauche arrondi, indicateurs TVA/URSSAF et argent réellement libre.
+- Actions rapides Dashboard : ajouter une dépense ou une recette.
+- Dépenses, recettes, justificatifs, corbeille de tickets et alertes de doublons.
+- Rapprochement bancaire manuel avec pointage, clôture, réouverture, confettis et son.
+- Calculatrice de commission agence TTC avec barème progressif.
+- Bilan mensuel/annuel avec détails, provisions fiscales de la période et enveloppes cumulées.
+- Récurrences mensuelles et virement personnel sans TVA ni provision fiscale.
+- Contrôles Dashboard : doublons, tickets manquants et pointages en attente jusqu’à aujourd’hui.
 
-À chaque nouvelle session, cliquer sur « Ouvrir mon dossier » pour retrouver les comptes. L'accès demande un navigateur compatible et une adresse HTTPS. Si le navigateur refuse l'accès, aucun enregistrement silencieux dans son stockage interne ne remplace le dossier choisi. Les copies de l'état précédent sont placées dans le sous-dossier `sauvegardes` avant les changements. La synchronisation pCloud est configurée et gérée séparément par l'utilisateur.
+Les comptes restent dans le dossier local choisi par l’utilisateur. Aucun fichier comptable réel ne doit être ajouté au dépôt GitHub.
 
-Premier bloc de test uniquement : recettes, calculatrice complète de commission, justificatifs et déclarations restent à intégrer. Le visuel est une première intégration, pas une validation du rendu final. La version mobile et la synchronisation entre appareils ne sont pas validées. Le site n'est pas encore une PWA hors connexion.
+## Utilisation
 
-## Publication
+À chaque session, cliquer sur **Ouvrir mon dossier** pour retrouver les comptes. L’accès demande un navigateur compatible File System Access API et une page HTTPS. Les copies de sécurité sont placées dans le sous-dossier `sauvegardes`.
 
-Le contenu de ce dossier est destiné à la racine d'un dépôt GitHub distinct, pas à être mélangé avec l'ancien serveur. Aucun fichier comptable réel ne doit être ajouté au dépôt.
+La synchronisation pCloud est gérée séparément par l’utilisateur. La version mobile et la synchronisation bidirectionnelle ne sont pas encore validées comme module complet.
 
-Le workflow `.github/workflows/pages.yml` teste puis publie les seuls fichiers de l'interface. Dans les réglages du dépôt, choisir Pages → Source : GitHub Actions. Le workflow se lance sur la branche `main` et fournit l'adresse de publication. Vérifier celle-ci sans session ChatGPT, puis sur le PC de l'utilisateur.
+## Publication GitHub
 
-GitHub Free fournit Pages pour un dépôt public ; le code publié est visible. Les conditions GitHub Pages et leur portée pour l'usage professionnel individuel restent à clarifier comme indiqué dans l'audit. Aucun abonnement ni domaine payant n'est prévu dans ce paquet.
+Ce projet doit être livré comme **ZIP complet GitHub**, pas comme simple dossier `public/`.
 
-## Vérifications effectuées
+Le paquet complet doit contenir au minimum :
 
-- Syntaxe JavaScript vérifiée.
-- Tests automatisés : montants, historique, références réservées, annulation, lecture après réouverture, sauvegarde/restauration, fichier invalide, écritures sérialisées et échec d'écriture sans altération du fichier.
-- Ces tests utilisent le système de fichiers temporaire de Node avec une simulation des accès du navigateur. Ils ne prouvent pas l'autorisation d'accès réelle dans Opera.
-- Déploiement GitHub, rendu dans le navigateur et accès au dossier sur PC : à vérifier après connexion et publication.
+- `.github/workflows/pages.yml`
+- `index.html`
+- `app.js`
+- `style.css`
+- `model.mjs`
+- `storage.mjs`
+- `receipts.mjs`
+- `reconciliation.mjs`
+- `reconciliation-ui.mjs`
+- `assets/`
+- `tests/`
+- `verify-public.mjs`
 
-Commande de test : `node --test tests/local.test.mjs` (Node 22 ou supérieur).
+Le workflow reconstruit le dossier `public` avant publication. Il doit conserver :
+
+```sh
+rm -rf public
+mkdir public
+```
+
+## Contrôles avant livraison
+
+Avant de remettre un ZIP à l’utilisateur :
+
+```sh
+node --check app.js
+node --check storage.mjs
+node --test tests/*.test.mjs
+rm -rf public
+mkdir public
+touch public/.nojekyll
+cp index.html app.js style.css model.mjs storage.mjs receipts.mjs reconciliation.mjs reconciliation-ui.mjs public/
+cp -R assets public/assets
+node verify-public.mjs public
+```
+
+Après création du ZIP, lister son contenu et confirmer :
+
+- tests OK ;
+- workflow simulé OK ;
+- ZIP complet OK ;
+- nombre de fichiers ;
+- type de ZIP : **ZIP complet GitHub**.
+
+## Règle importante
+
+Ne pas livrer un ZIP contenant seulement `public/`. Cette erreur a déjà causé un échec GitHub Actions et ne doit plus se reproduire.
+
+## Règle de collaboration
+
+Thibaut porte le besoin métier, les retours d’usage et les validations sur son PC. L’assistant porte la méthode de développement : cohérence technique, garde-fous, tests, packaging GitHub et prévention des erreurs déjà rencontrées.
+
+Si une demande ou une manipulation risque de casser les données, le workflow, le packaging ou une décision validée, l’assistant doit le signaler et proposer une option plus sûre avant d’agir.
