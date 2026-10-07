@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {empty,change,validate,financeSummary} from '../model.mjs';
+import {empty,change,validate,financeSummary,pendingBankControls} from '../model.mjs';
 import {bankSummary,bankRows} from '../reconciliation.mjs';
 const expense={day:'2026-10-02',amount:'120',vat:'20',label:'Restaurant',category:'Restaurant',payment:'Carte pro',notes:''};
 const revenue={day:'2026-10-01',amount:'1200',vat:'200',label:'Recette',category:'Autre recette',notes:''};
@@ -12,6 +12,12 @@ test('Rapprochement : solde initial, pointage, dates réelles et dépointage',()
  d=point(d,'expense',1,'2026-10-04');assert.equal(bankSummary(d,'2026-10-31').expected,208000);assert.equal(bankSummary(d,'2026-10-31').pending,0);assert.deepEqual(financeSummary(d,2026),finance);
  d=change(d,'clearBank',{kind:'expense',id:1,cleared:false});assert.equal(bankSummary(d,'2026-10-31').expected,220000);assert.equal(bankSummary(d,'2026-10-31').pending,1);
  assert.throws(()=>point(d,'expense',1,'2026-09-30'));assert.throws(()=>point(d,'other',1,'2026-10-02'));assert.throws(()=>point(d,'expense',999,'2026-10-02'));
+});
+test('Contrôles Dashboard : pointages en attente limités à aujourd’hui',()=>{
+ const rows=[{day:'2026-10-01',label:'À pointer'},{day:'2026-10-02',label:'Pointée',clearedDay:'2026-10-02'},{day:'2026-10-03',label:'Future'}];
+ assert.deepEqual(pendingBankControls(rows,'2026-10-02').map(r=>r.label),['À pointer']);
+ assert.deepEqual(pendingBankControls(rows,'2026-10-03').map(r=>r.label),['À pointer','Future']);
+ assert.throws(()=>pendingBankControls(rows,'2026-02-30'));
 });
 test('Clôture : écart nul, opérations pointées, verrouillage puis réouverture',()=>{
  let d=base();assert.throws(()=>change(d,'closeBank',{end:'2026-10-31',balance:'1000'}),/attente/);

@@ -153,6 +153,15 @@ test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=
  f=financeSummary(d,2026);
  assert.equal(f.vatPaid,110000);
  assert.equal(f.urssafPaid,55000);
+ d=change(d,'save',{...expense,day:'2026-09-26',amount:'25',vat:'0',category:'Paiement TVA'});
+ d=change(d,'save',{...expense,day:'2026-09-27',amount:'25',vat:'0',category:'URSSAF'});
+ f=financeSummary(d,2026);
+ assert.equal(f.vatPaid,112500);
+ assert.equal(f.urssafPaid,57500);
+ d=change(d,'save',{...expense,day:'2026-09-28',amount:'2000',vat:'333.33',category:'virement personnel'});
+ f=financeSummary(d,2026);
+ assert.equal(f.vatDeductible,2000);
+ assert.equal(f.reserved,361750);
 });
 test('Audit calculs : recettes modifiées/supprimées et provisions ignorées correctement',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});

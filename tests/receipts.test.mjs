@@ -21,7 +21,7 @@ test('Justificatifs : exonération, anciens dossiers et paiements de provisions'
  let d=change(base(),'save',expense);assert.doesNotThrow(()=>validate(d));
  d=change(d,'save',{...expense,id:1,receiptExempt:true});assert.equal(missingReceipts(d.expenses),0);
  d=change(d,'save',{...expense,id:1,receiptExempt:false});assert.equal(missingReceipts(d.expenses),1);
- for(const category of ['TVA reversée','Cotisations URSSAF','Impôt'])d=change(d,'save',{...expense,category});
+ for(const category of ['TVA reversée','tva reverse','TVA payée','Paiement TVA','Cotisations URSSAF','Paiement URSSAF','Impôt','virement personnel'])d=change(d,'save',{...expense,category});
  assert.equal(missingReceipts(d.expenses),1);
 });
 test('Justificatifs : formats, taille et données invalides refusés',()=>{

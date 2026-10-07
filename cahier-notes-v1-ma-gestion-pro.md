@@ -304,4 +304,26 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Evolution V2.1 : les panneaux Statistiques, Calculateur de commission et Contrôles à examiner du Dashboard se replient et se déplient en cliquant sur leur titre.
 - Aucun changement des calculs, des fichiers de comptes, des sauvegardes, du rapprochement ou du son de clôture.
 - Test d’interface ajouté pour verrouiller les trois panneaux repliables et conserver l’ordre des sept onglets.
+
+## V2.1.1 — Correction hauteur des panneaux repliés — 07/10/2026
+- Bug constaté sur PC : Statistiques et Calculateur de commission étaient dans la même ligne CSS et gardaient la hauteur du panneau voisin tant que les deux n’étaient pas repliés.
+- Correction : la grille du Dashboard aligne les panneaux en haut, ce qui permet un repli individuel réel.
+- Test d’interface renforcé pour vérifier que la grille ne force plus l’étirement vertical des panneaux.
+
+## Lot en cours après V2.1.1 — Bilan fiscal enrichi — 07/10/2026
+- Nouvelle méthode validée par Thibaut : ne plus générer un ZIP à chaque micro-correction. Cumuler plusieurs corrections/évolutions, tester localement au fil de l’eau, puis livrer un paquet quand le lot mérite un test GitHub.
+- Bilan : ajout du bloc Provisions de la période avec TVA collectée, TVA déductible, TVA déjà payée, TVA nette à réserver, URSSAF générée, URSSAF déjà payée, URSSAF à réserver et total à réserver.
+- Bilan : ajout du bloc Enveloppes cumulées au dernier jour consulté, pour distinguer la période affichée du reste à réserver cumulé sur l’année.
+- Impression/PDF : les blocs fiscaux sont forcés en fond blanc pendant l’impression pour éviter un texte noir sur fond sombre.
+- Reconnaissance des paiements TVA/URSSAF/impôt unifiée entre les calculs de réserves et le compteur de justificatifs. Les variantes TVA reversée, tva reverse, TVA payée, Paiement TVA, Cotisations URSSAF, Paiement URSSAF, URSSAF et Impôt suivent désormais la même logique.
+- Virement personnel sécurisé comme sortie personnelle même en saisie minuscule : TVA forcée à zéro dans les récurrences, pas de TVA déductible, pas de justificatif obligatoire et aucune provision fiscale générée.
+- Dashboard / Contrôles à examiner : ajout des opérations non pointées jusqu’à aujourd’hui, avec bouton direct vers Rapprochement. Le panneau couvre maintenant doublons potentiels, tickets manquants et pointages en attente.
+- Dashboard / Contrôles à examiner : chaque ligne reçoit un badge lisible (Doublon, Ticket, Pointage) pour distinguer rapidement le type d’action à traiter.
+- Le filtre des pointages en attente est isolé et testé : les opérations futures ne déclenchent pas d’alerte avant leur date.
+- Le bloc respecte le périmètre du Bilan : mois choisi ou année entière, opérations futures incluses si elles sont saisies dans la période, opérations annulées exclues.
+- Test ajouté sur le Bilan fiscal : une TVA payée, un paiement URSSAF ou une dépense classique supprimés restent exclus des provisions et des enveloppes cumulées.
+- Publication locale : `public/` resynchronisé avec les sources testées, y compris `dashboard-visual-v2.png`, pour éviter un ZIP basé sur d’anciens fichiers.
+- Lot nommé V2.2 côté interface et note de version ajoutée. ZIP non généré à ce stade : attendre le feu vert de Thibaut pour lancer la livraison/test GitHub.
+- Aucun changement du Dashboard, des fichiers de comptes, des sauvegardes ou du rapprochement.
+- Tests renforcés sur mois, année et cumul fin de période, avec variantes de saisie TVA/URSSAF. Contrôles locaux OK.
 - Limite : le navigateur distant refuse les URL locales par politique de sécurité. Ne pas annoncer le rendu Opera comme vérifié avant l’essai réel de Thibaut.
