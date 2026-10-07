@@ -37,6 +37,7 @@ jobs:
 
       - name: Préparer les fichiers publics
         run: |
+          rm -rf public
           mkdir public
           touch public/.nojekyll
            cp index.html app.js style.css model.mjs storage.mjs receipts.mjs reconciliation.mjs reconciliation-ui.mjs public/
