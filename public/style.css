@@ -306,7 +306,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 
 }
 body{
  background:
-  linear-gradient(90deg,#ffffff00 0,#ffffff00 45%,#ffffff80 100%),
+  linear-gradient(90deg,#ffffff00 0,#ffffff00 58%,#ffffff30 100%),
   url('./assets/dashboard-background-v3.png') center top/cover fixed no-repeat;
  color:var(--text);
 }
@@ -315,7 +315,7 @@ body::before{
  position:fixed;
  inset:0;
  z-index:-1;
- background:linear-gradient(180deg,#f6fbff28 0,#d8e9f3d9 58%,#cfe2eef2 100%);
+ background:linear-gradient(180deg,#f6fbff00 0,#d8e9f314 60%,#cfe2ee28 100%);
 }
 .connection-bar{
  background:#eaf4fbeb;
@@ -323,15 +323,18 @@ body::before{
  color:#284358;
 }
 .hero{
- aspect-ratio:1440/265;
- background-image:linear-gradient(180deg,#ffffff00 0,#ffffff1f 70%,#d9eaf5 100%),url('./assets/dashboard-background-v3.png');
- background-size:cover;
- background-position:center 30%;
- border-bottom:0;
- box-shadow:none;
+ display:none;
 }
 .content{max-width:1510px}
-.section-top{margin-top:12px}
+.section-top{margin-top:32px}
+.page{
+ margin:28px auto;
+ padding:28px 30px 32px;
+ border:1px solid #c5d7e5;
+ border-radius:18px;
+ background:linear-gradient(145deg,#f4fbfff2,#dfeef9f0);
+ box-shadow:0 20px 48px #17324a24,inset 0 1px #fff;
+}
 .section-top>p,.scope{color:#31516b}
 .metrics article{
  background:linear-gradient(145deg,#f5fbffed,#dfeefaed);
@@ -406,36 +409,43 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   background:linear-gradient(180deg,#071b32f5 0,#06192df5 100%);
   box-shadow:0 28px 70px #06142655;
   backdrop-filter:blur(12px);
+  overflow:hidden;
  }
  .logo{
   width:100%;
   height:auto;
-  min-height:88px;
+  min-height:76px;
   flex:0 0 auto;
   margin:0;
   padding:0 4px;
   background-image:none!important;
-  color:#fff;
-  text-shadow:none;
-  font-style:normal;
-  font-weight:800;
-  font-size:26px;
-  line-height:.98;
-  letter-spacing:-.04em;
+ color:#ff75a8;
+ text-shadow:0 0 10px #ff639d88,0 0 26px #ff639d55;
+ font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;
+ font-style:italic;
+ font-weight:700;
+  font-size:23px;
+  line-height:1.04;
+ letter-spacing:-.02em;
  }
  .logo::before{
-  content:'▌▌▌\A Ma\A Gestion\A Pro';
+  content:'Ma\A Gestion\A Pro';
   white-space:pre-line;
-  color:#fff;
+  color:#ff75a8;
  }
- nav{gap:10px}
+ nav{width:100%;gap:10px;overflow:hidden}
  nav button{
+  width:100%;
+  min-width:0;
   min-height:52px;
   padding:13px 13px 13px 47px;
   border:1px solid transparent;
   border-radius:10px;
   color:#dce9f7;
   background:transparent;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
  }
  nav button.active{
   border:1px solid #6ab8f3;
@@ -445,7 +455,6 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  }
  nav button.active::before{color:white;text-shadow:none}
  .offline{color:#94abc0}
- .hero{aspect-ratio:1440/270;background-position:center 31%}
 }
 
 @media(max-width:999px){
@@ -461,8 +470,22 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   background:#2d77b8;
   color:white;
  }
- .hero{background-position:center 28%}
 }
+
+.bank-summary{
+ background:#f5fbfff0;
+ border:1px solid #c5d7e5;
+ border-radius:14px;
+ padding:18px;
+}
+.bank-table-wrap{
+ margin-top:18px;
+ border:1px solid #c5d7e5;
+ border-radius:14px;
+ background:#f5fbfff0;
+ box-shadow:inset 0 1px #fff;
+}
+.bank-table th,.bank-table td{border-bottom-color:#c5d7e5}
 
 .dashboard-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .secondary-action{

@@ -41,6 +41,21 @@ test('Dashboard V3 : les actions rapides ouvrent dépenses et recettes',async()=
  assert.match(css,/\.secondary-action/);
 });
 
+test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()=>{
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(css,/url\('\.\/assets\/dashboard-background-v3\.png'\) center top\/cover fixed no-repeat/);
+ assert.match(css,/background:linear-gradient\(180deg,#f6fbff00 0,#d8e9f314 60%,#cfe2ee28 100%\)/);
+ assert.match(css,/\.hero\{\s*display:none;\s*\}/);
+ assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:76px;[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:23px;/);
+ assert.match(css,/text-shadow:0 0 10px #ff639d88,0 0 26px #ff639d55/);
+ assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
+ assert.match(css,/nav\{width:100%;gap:10px;overflow:hidden\}/);
+ assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:ellipsis;/);
+ assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f4fbfff2,#dfeef9f0\)/);
+ assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbfff0/);
+});
+
 test('Dashboard V3 : le compteur tickets reste aligné avec les autres indicateurs',async()=>{
  const app=await readFile(path.join(root,'app.js'),'utf8');
  assert.match(app,/receiptIcon\.className='metric-icon'/);
