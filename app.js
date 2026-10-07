@@ -50,6 +50,8 @@ function makeCollapsible(panel,id){
  button.addEventListener('click',()=>{body.hidden=!body.hidden;button.setAttribute('aria-expanded',String(!body.hidden));});
 }
 makeCollapsible(controlsPanel,'controls-content');
+makeCollapsible($('.chart-panel'),'dashboard-stats-content');
+makeCollapsible($('.dashboard-calculator'),'dashboard-calculator-content');
 function renderControls(){
  controlsBody.replaceChildren();if(!state?.connected){controlsBody.textContent='Ouvre ton dossier pour consulter les contrôles.';return;}
  const groups=[...duplicateGroups(state.expenses).map(rows=>({rows,type:'expense'})),...duplicateGroups(state.revenues).map(rows=>({rows,type:'revenue'}))];

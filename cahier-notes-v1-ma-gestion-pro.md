@@ -298,4 +298,10 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - V2.0 applique cette identité au logiciel actuel. Les huit indicateurs fonctionnels restent affichés en deux rangées de quatre. Ordre des sept onglets conservé : Dashboard, Dépenses, Recettes, Rapprochement, Calculatrice, Bilan, Réglages & sauvegardes.
 - Aucun changement des calculs, du stockage ou du format des comptes. Confettis et son V1.4.9 conservés.
 - Contrôle final du paquet : ZIP extrait dans un dossier neuf, 41 fichiers intègres, 36 tests Node relancés, syntaxes vérifiées, structure HTML et identifiants contrôlés, dossier public reconstruit, empreintes image/son conformes, dépendances vérifiées, tests négatifs sans image et sans MP3 réussis, 10 fichiers publics servis en HTTP 200 avec contenu et types MIME exacts.
+
+## V2.1 — Dashboard repliable — 07/10/2026
+- V2.0 validée sur PC par Thibaut : intégration GitHub, onglets, dossier de comptes et animation/son de clôture OK.
+- Evolution V2.1 : les panneaux Statistiques, Calculateur de commission et Contrôles à examiner du Dashboard se replient et se déplient en cliquant sur leur titre.
+- Aucun changement des calculs, des fichiers de comptes, des sauvegardes, du rapprochement ou du son de clôture.
+- Test d’interface ajouté pour verrouiller les trois panneaux repliables et conserver l’ordre des sept onglets.
 - Limite : le navigateur distant refuse les URL locales par politique de sécurité. Ne pas annoncer le rendu Opera comme vérifié avant l’essai réel de Thibaut.

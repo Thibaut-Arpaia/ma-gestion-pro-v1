@@ -5,10 +5,10 @@ import path from 'node:path';
 
 const root=path.resolve(import.meta.dirname,'..');
 
-test('Interface V2.0 : visuel validé et ressources locales présentes',async()=>{
+test('Interface V2.1 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/V2\.0 web · nouveau visuel/);
+ assert.match(html,/V2\.1 web · dashboard repliable/);
  assert.match(css,/dashboard-visual-v2\.png/);
  assert.match(css,/--pink:#ff639d/);
  assert.match(css,/--mint:#55efda/);
@@ -16,7 +16,7 @@ test('Interface V2.0 : visuel validé et ressources locales présentes',async()=
  await access(path.join(root,'assets','crowd-applause-and-cheering-237756-5s.mp3'));
 });
 
-test('Interface V2.0 : les sept onglets restent dans l’ordre validé',async()=>{
+test('Interface V2.1 : les sept onglets restent dans l’ordre validé',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const app=await readFile(path.join(root,'app.js'),'utf8');
  const bank=await readFile(path.join(root,'reconciliation-ui.mjs'),'utf8');
@@ -28,4 +28,14 @@ test('Interface V2.0 : les sept onglets restent dans l’ordre validé',async()=
  assert.match(app,/dataset\.view='reports'/);
  assert.match(app,/insertBefore\(reportNav,document\.querySelector\('nav \[data-view=settings\]'\)\)/);
  assert.match(app,/view\('dashboard'\)/);
+});
+
+test('Dashboard : les panneaux principaux restent repliables',async()=>{
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(app,/makeCollapsible\(\$\('\.chart-panel'\),'dashboard-stats-content'\)/);
+ assert.match(app,/makeCollapsible\(\$\('\.dashboard-calculator'\),'dashboard-calculator-content'\)/);
+ assert.match(app,/makeCollapsible\(controlsPanel,'controls-content'\)/);
+ assert.match(css,/\.panel-toggle\[aria-expanded="false"\]::before/);
+ assert.match(css,/\.collapsible-body\[hidden\]/);
 });
