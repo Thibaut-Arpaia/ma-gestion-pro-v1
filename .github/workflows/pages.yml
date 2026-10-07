@@ -30,7 +30,12 @@ jobs:
       - name: Vérifier les fichiers et les comptes locaux
         run: |
           node --check app.js
+          node --check model.mjs
           node --check storage.mjs
+          node --check receipts.mjs
+          node --check reconciliation.mjs
+          node --check reconciliation-ui.mjs
+          node --check verify-public.mjs
           node --test tests/*.test.mjs
 
       - uses: actions/configure-pages@v5
@@ -40,8 +45,9 @@ jobs:
           rm -rf public
           mkdir public
           touch public/.nojekyll
-           cp index.html app.js style.css model.mjs storage.mjs receipts.mjs reconciliation.mjs reconciliation-ui.mjs public/
+          cp index.html app.js style.css model.mjs storage.mjs receipts.mjs reconciliation.mjs reconciliation-ui.mjs public/
           cp -R assets public/assets
+          node verify-public.mjs public
 
       - uses: actions/upload-pages-artifact@v3
         with:
