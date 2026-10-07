@@ -318,23 +318,7 @@ body::before{
  background:linear-gradient(180deg,#f6fbff00 0,#d8e9f314 60%,#cfe2ee28 100%);
 }
 .connection-bar{
- justify-content:flex-end;
- padding:18px 34px 0;
- background:transparent;
- border-bottom:0;
- color:#284358;
-}
-.connection-bar span{
- max-width:520px;
- padding:9px 13px;
- border:1px solid #c5d7e5;
- border-radius:999px;
- background:#f6fbffb8;
- box-shadow:0 10px 26px #17324a18;
-}
-.connection-bar button{
- padding:9px 14px;
- border-radius:999px;
+ display:none;
 }
 .hero{
  display:none;
@@ -351,7 +335,7 @@ body::before{
 }
 .section-top>p,.scope{color:#31516b}
 .metrics article{
- background:linear-gradient(145deg,#f8fcffe1,#eaf4fbdc);
+ background:linear-gradient(145deg,#f8fcffd4,#eaf4fbcf);
  border:1px solid #c7d8e5;
  border-radius:13px;
  box-shadow:0 14px 35px #17324a1e,inset 0 1px #fff;
@@ -370,7 +354,7 @@ body::before{
  text-shadow:none;
 }
 .panel{
- background:linear-gradient(145deg,#f7fcffe3,#e9f4fbe0);
+ background:linear-gradient(145deg,#f7fcffd8,#e9f4fbd3);
  border:1px solid #c5d7e5;
  border-radius:14px;
  color:#071735;
@@ -414,10 +398,10 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
 @media(min-width:1000px){
  body{padding-left:268px}
  .topbar{
-  inset:28px auto 28px 24px;
+  inset:28px auto auto 24px;
   width:216px;
-  padding:23px 16px 18px;
-  gap:20px;
+  padding:20px 16px 16px;
+  gap:13px;
   border:1px solid #153555;
   border-radius:26px;
   background:linear-gradient(180deg,#071b32f5 0,#06192df5 100%);
@@ -428,42 +412,44 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  .logo{
   width:100%;
   height:auto;
-  min-height:76px;
+  min-height:86px;
   flex:0 0 auto;
   margin:0;
-  padding:0 4px;
+  padding:0 0 0 18px;
   background-image:none!important;
  color:#ff75a8;
  text-shadow:0 0 10px #ff639d88,0 0 26px #ff639d55;
  font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;
  font-style:italic;
  font-weight:700;
-  font-size:23px;
-  line-height:1.04;
+  font-size:25px;
+  line-height:1;
  letter-spacing:-.02em;
   align-items:center;
-  justify-content:center;
-  text-align:center;
+  justify-content:flex-start;
+  text-align:left;
  }
  .logo::before{
   content:'Ma\A Gestion\A Pro';
   white-space:pre-line;
   color:#ff75a8;
  }
- nav{width:100%;gap:10px;overflow:hidden}
+ nav{width:100%;gap:6px;overflow:hidden}
  nav button{
   width:100%;
   min-width:0;
-  min-height:52px;
-  padding:13px 13px 13px 47px;
+  min-height:48px;
+  padding:11px 12px 11px 47px;
   border:1px solid transparent;
   border-radius:10px;
   color:#dce9f7;
   background:transparent;
   overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
+  white-space:normal;
+  line-height:1.15;
+  text-overflow:clip;
  }
+ nav button[data-view='settings']{min-height:58px}
  nav button.active{
   border:1px solid #6ab8f3;
   color:white;
@@ -471,7 +457,7 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   box-shadow:inset 0 1px #ffffff35,0 12px 24px #103f6b52;
  }
  nav button.active::before{color:white;text-shadow:none}
- .offline{color:#94abc0}
+ .offline{margin:10px 8px 0;color:#94abc0}
 }
 
 @media(max-width:999px){
@@ -487,19 +473,6 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   background:#2d77b8;
   color:white;
  }
-}
-
-@media(max-width:700px){
- .connection-bar{
-  align-items:stretch;
-  flex-direction:column;
-  padding:12px 15px 0;
- }
- .connection-bar span{
-  max-width:none;
-  border-radius:12px;
- }
- .connection-bar button{width:100%}
 }
 
 .bank-summary{

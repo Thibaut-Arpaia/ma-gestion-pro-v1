@@ -34,10 +34,10 @@ test('Interface V2.2 : les sept onglets restent dans l’ordre validé',async()=
 test('Interface V3 : les libellés du menu restent dans le cadre',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/<button data-view="settings">Réglages<\/button>/);
- assert.doesNotMatch(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
- assert.match(css,/\.logo\{[\s\S]*justify-content:center;[\s\S]*text-align:center;/);
- assert.match(css,/nav button\{[\s\S]*text-overflow:ellipsis;/);
+ assert.match(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
+ assert.match(css,/\.logo\{[\s\S]*justify-content:flex-start;[\s\S]*text-align:left;/);
+ assert.match(css,/nav button\{[\s\S]*white-space:normal;[\s\S]*line-height:1\.15;/);
+ assert.match(css,/nav button\[data-view='settings'\]\{min-height:58px\}/);
 });
 
 test('Dashboard V3 : les actions rapides ouvrent dépenses et recettes',async()=>{
@@ -56,15 +56,15 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/background:linear-gradient\(180deg,#f6fbff00 0,#d8e9f314 60%,#cfe2ee28 100%\)/);
  assert.match(css,/\.hero\{\s*display:none;\s*\}/);
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
- assert.match(css,/\.logo\{[\s\S]*min-height:76px;[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:23px;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:86px;[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:25px;/);
  assert.match(css,/text-shadow:0 0 10px #ff639d88,0 0 26px #ff639d55/);
  assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
- assert.match(css,/nav\{width:100%;gap:10px;overflow:hidden\}/);
- assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:ellipsis;/);
+ assert.match(css,/nav\{width:100%;gap:6px;overflow:hidden\}/);
+ assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:clip;/);
  assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f6fbffe8,#e7f2fae4\)/);
- assert.match(css,/\.connection-bar\{[\s\S]*background:transparent;[\s\S]*border-bottom:0;/);
- assert.match(css,/\.metrics article\{[\s\S]*background:linear-gradient\(145deg,#f8fcffe1,#eaf4fbdc\)/);
- assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffe3,#e9f4fbe0\)/);
+ assert.match(css,/\.connection-bar\{\s*display:none;\s*\}/);
+ assert.match(css,/\.metrics article\{[\s\S]*background:linear-gradient\(145deg,#f8fcffd4,#eaf4fbcf\)/);
+ assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffd8,#e9f4fbd3\)/);
  assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbfff0/);
 });
 
@@ -79,6 +79,9 @@ test('Dashboard V3 : le compteur tickets reste aligné avec les autres indicateu
 test('Dashboard : les panneaux principaux restent repliables',async()=>{
  const app=await readFile(path.join(root,'app.js'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(app,/function makeCollapsible\(panel,id,open=false\)/);
+ assert.match(app,/body\.hidden=!open/);
+ assert.match(app,/button\.setAttribute\('aria-expanded',String\(open\)\)/);
  assert.match(app,/makeCollapsible\(\$\('\.chart-panel'\),'dashboard-stats-content'\)/);
  assert.match(app,/makeCollapsible\(\$\('\.dashboard-calculator'\),'dashboard-calculator-content'\)/);
  assert.match(app,/makeCollapsible\(controlsPanel,'controls-content'\)/);

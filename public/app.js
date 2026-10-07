@@ -42,12 +42,13 @@ const controlsPanel=document.createElement('section');controlsPanel.className='p
 const controlsHeading=document.createElement('h2');controlsHeading.textContent='Contrôles à examiner';
 const controlsHint=document.createElement('p');controlsHint.className='muted';controlsHint.textContent='Doublons potentiels, justificatifs manquants et pointages en attente. Aucune suppression automatique.';
 const controlsBody=document.createElement('div');controlsPanel.append(controlsHeading,controlsHint,controlsBody);$('#dashboard .content').append(controlsPanel);
-function makeCollapsible(panel,id){
+function makeCollapsible(panel,id,open=false){
  const heading=panel.querySelector('h2');let header=heading.parentElement;
  if(header===panel){header=document.createElement('div');header.className='panel-head';panel.insertBefore(header,heading);header.append(heading);}
- const button=document.createElement('button');button.type='button';button.className='panel-toggle';button.textContent=heading.textContent;button.setAttribute('aria-expanded','true');button.setAttribute('aria-controls',id);heading.replaceChildren(button);
+ const button=document.createElement('button');button.type='button';button.className='panel-toggle';button.textContent=heading.textContent;button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-controls',id);heading.replaceChildren(button);
  const body=document.createElement('div');body.id=id;body.className='collapsible-body';
  for(const child of [...panel.childNodes])if(child!==header)body.append(child);panel.append(body);
+ body.hidden=!open;
  button.addEventListener('click',()=>{body.hidden=!body.hidden;button.setAttribute('aria-expanded',String(!body.hidden));});
 }
 makeCollapsible(controlsPanel,'controls-content');
