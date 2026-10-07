@@ -31,6 +31,15 @@ test('Interface V2.2 : les sept onglets restent dans l’ordre validé',async()=
  assert.match(app,/view\('dashboard'\)/);
 });
 
+test('Interface V3 : les libellés du menu restent dans le cadre',async()=>{
+ const html=await readFile(path.join(root,'index.html'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(html,/<button data-view="settings">Réglages<\/button>/);
+ assert.doesNotMatch(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
+ assert.match(css,/\.logo\{[\s\S]*justify-content:center;[\s\S]*text-align:center;/);
+ assert.match(css,/nav button\{[\s\S]*text-overflow:ellipsis;/);
+});
+
 test('Dashboard V3 : les actions rapides ouvrent dépenses et recettes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
@@ -52,7 +61,10 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
  assert.match(css,/nav\{width:100%;gap:10px;overflow:hidden\}/);
  assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:ellipsis;/);
- assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f4fbfff2,#dfeef9f0\)/);
+ assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f6fbffe8,#e7f2fae4\)/);
+ assert.match(css,/\.connection-bar\{[\s\S]*background:transparent;[\s\S]*border-bottom:0;/);
+ assert.match(css,/\.metrics article\{[\s\S]*background:linear-gradient\(145deg,#f8fcffe1,#eaf4fbdc\)/);
+ assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffe3,#e9f4fbe0\)/);
  assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbfff0/);
 });
 
