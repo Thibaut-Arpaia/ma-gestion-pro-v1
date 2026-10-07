@@ -9,6 +9,8 @@ test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
  assert.match(html,/V3 web · visuel immobilier clair · bilan fiscal \+ contrôles/);
+ assert.match(html,/class="dashboard-title">Ma Gestion Pro<\/h1>/);
+ assert.match(html,/class="muted version-note"/);
  assert.match(css,/dashboard-background-v3\.png/);
  assert.match(css,/dashboard-visual-v2\.png/);
  assert.match(css,/V3 — direction validee/);
@@ -36,6 +38,7 @@ test('Interface V3 : les libellés du menu restent dans le cadre',async()=>{
  const css=await readFile(path.join(root,'style.css'),'utf8');
  assert.match(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
  assert.match(css,/\.logo\{[\s\S]*justify-content:flex-start;[\s\S]*text-align:left;/);
+ assert.match(css,/content:'▌▌▌\\A MGP'/);
  assert.match(css,/nav button\{[\s\S]*white-space:normal;[\s\S]*line-height:1\.15;/);
  assert.match(css,/nav button\[data-view='settings'\]\{min-height:58px\}/);
 });
@@ -56,9 +59,12 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/background:linear-gradient\(180deg,#f6fbff00 0,#d8e9f314 60%,#cfe2ee28 100%\)/);
  assert.match(css,/\.hero\{\s*display:none;\s*\}/);
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
- assert.match(css,/\.logo\{[\s\S]*min-height:86px;[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:25px;/);
+ assert.match(css,/\.dashboard-title\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:58px;/);
+ assert.match(css,/\.version-note\{[\s\S]*position:fixed;[\s\S]*right:24px;[\s\S]*bottom:16px;/);
+ assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:25px;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:76px;/);
  assert.match(css,/text-shadow:0 0 10px #ff639d88,0 0 26px #ff639d55/);
- assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
+ assert.match(css,/content:'▌▌▌\\A MGP'/);
  assert.match(css,/nav\{width:100%;gap:6px;overflow:hidden\}/);
  assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:clip;/);
  assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f6fbffe8,#e7f2fae4\)/);
