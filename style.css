@@ -16,6 +16,7 @@ input[type="checkbox"]{width:auto;min-height:0;margin-right:8px;display:inline-b
  body.printing-report #period-report{background:white!important;color:black!important;border:0;box-shadow:none}
  body.printing-report #period-report .form-actions{display:none!important}
  body.printing-report #period-report *{color:black!important}
+ body.printing-report #period-report .report-fiscal{background:white!important;border-color:#999!important}
  body.printing-report .content{width:100%;max-width:none;margin:0;padding:0}
  body.printing-report table{width:100%;border-collapse:collapse}
  body.printing-report tr{break-inside:avoid}
@@ -107,7 +108,7 @@ button.primary:hover{background:linear-gradient(105deg,#8dffed,#82e4ff)}
 .metrics strong{font-size:26px;color:var(--accent);text-shadow:0 0 18px color-mix(in srgb,var(--accent) 25%,transparent)}
 .metrics small{font-size:10px;color:#93a8c1}
 .metric-icon,.metric-icon.orange{color:var(--accent);font-size:29px;text-shadow:0 0 16px color-mix(in srgb,var(--accent) 45%,transparent)}
-.lower{grid-template-columns:minmax(0,2.65fr) minmax(300px,1fr);gap:18px;margin-top:18px}
+.lower{grid-template-columns:minmax(0,2.65fr) minmax(300px,1fr);gap:18px;margin-top:18px;align-items:start}
 .panel{
  background:linear-gradient(145deg,#0a2338f5,#06182af5);
  border:1px solid #1b4766;
@@ -147,6 +148,32 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 
 .bank-match,.bank-income{color:var(--mint)}
 .bank-expense,.danger{color:#ff9fbd}
 .panel-toggle::before{color:var(--cyan)}
+.control-row{align-items:flex-start}
+.control-badge{
+ display:inline-flex;
+ align-items:center;
+ margin-right:8px;
+ padding:2px 8px;
+ border:1px solid #2b6b8d;
+ border-radius:999px;
+ color:var(--mint);
+ font-size:11px;
+ line-height:1.4;
+ text-transform:uppercase;
+ letter-spacing:.04em;
+}
+.report-fiscal{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+ gap:8px 18px;
+ margin:18px 0;
+ padding:16px;
+ border:1px solid #1b4766;
+ border-radius:10px;
+ background:#04172a;
+}
+.report-fiscal h3{grid-column:1/-1;margin:0 0 4px}
+.report-fiscal p{margin:0;color:#c8d8e8}
 
 @media(min-width:1000px){
  body{padding-left:232px}

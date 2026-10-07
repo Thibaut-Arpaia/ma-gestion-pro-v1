@@ -27,12 +27,13 @@ export function commissionSummary(revenues,year){
  for(const r of rows){const ht=Math.round(r.cents/1.2),calc=reverseCommissionBase(ht,baseHt);baseHt=calc.nextHt;advisorTtc+=r.cents;advisorHt+=ht;vat+=r.cents-ht;}
  return {count:rows.length,baseHt,advisorTtc,advisorHt,vat};
 }
-function normCategory(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
-function provisionKind(category){
+export function normCategory(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+export function provisionKind(category){
  const c=normCategory(category);
  if(c.includes('tva')&&(c.includes('reversee')||c.includes('reverse')||c.includes('payee')||c.includes('paiement')))return 'vat';
  if(c.includes('urssaf')&&(c.includes('cotisation')||c.includes('payee')||c.includes('paiement')||c==='urssaf'))return 'urssaf';
  if(c.includes('impot'))return 'tax';
+ if(c.includes('virement')&&c.includes('personnel'))return 'personal';
  return null;
 }
 function revenueParts(r){if(r.category==='Commission immobilière'){const ht=Math.round(r.cents/1.2);return {ht,vat:r.cents-ht};}return {ht:r.cents-r.vat_cents,vat:r.vat_cents};}
@@ -92,14 +93,14 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  }
  else if(action==='saveRecurring'){
  if(!d.setup)throw Error('Enregistre ton point de départ dans Réglages.');
- const personal=p.category==='Virement personnel';const v={label:String(p.label||'').trim(),category:String(p.category||'').trim(),cents:money(p.amount),vat_cents:personal?0:money(p.vat||'0'),payment:p.payment,day:Number(p.day),start:p.start,active:true};
+ const category=String(p.category||'').trim(),personal=provisionKind(category)==='personal';const v={label:String(p.label||'').trim(),category,cents:money(p.amount),vat_cents:personal?0:money(p.vat||'0'),payment:p.payment,day:Number(p.day),start:p.start,active:true};
  const old=p.id?d.recurring.find(r=>r.id===Number(p.id)):null;if(p.id&&!old)throw Error('Récurrence introuvable.');
  if(old)Object.assign(old,{...v,active:old.active});else d.recurring.push({...v,id:d.recurring.reduce((max,r)=>Math.max(max,r.id),0)+1,issued:[]});
  }else if(action==='toggleRecurring'){const row=d.recurring.find(r=>r.id===Number(p));if(!row)throw Error('Récurrence introuvable.');row.active=!row.active;}
  else if(action==='issueRecurring'){
  if(!d.setup)throw Error('Enregistre ton point de départ.');const planned=recurringOccurrence(d,Number(p.id),p.month);
  if(d.expenses.some(r=>!r.cancelled&&r.day===planned.day&&r.cents===planned.cents&&normCategory(r.label)===normCategory(planned.label)))throw Error('Une dépense identique existe déjà. Vérifie-la avant de générer cette échéance.');
- const id=d.expenses.reduce((max,r)=>Math.max(max,r.id),0)+1;d.expenses.push({...planned,id,ref:null,historical:false,cancelled:false,notes:'Échéance mensuelle générée',recurringId:Number(p.id),recurringMonth:p.month,receiptExempt:planned.category==='Virement personnel'});
+ const id=d.expenses.reduce((max,r)=>Math.max(max,r.id),0)+1;d.expenses.push({...planned,id,ref:null,historical:false,cancelled:false,notes:'Échéance mensuelle générée',recurringId:Number(p.id),recurringMonth:p.month,receiptExempt:provisionKind(planned.category)==='personal'});
  d.recurring.find(r=>r.id===Number(p.id)).issued.push(p.month);
  }
  else if(['clearBank','closeBank','reopenBank'].includes(action))bankChange(d,action,p,money);
@@ -124,6 +125,11 @@ export function duplicateGroups(rows){
  return [...groups.values()].filter(group=>group.length>1);
 }
 
+export function pendingBankControls(rows,asOf){
+ if(!date(asOf))throw Error('Date de contrôle invalide.');
+ return (rows||[]).filter(row=>row.day<=asOf&&!row.clearedDay);
+}
+
 export function periodReport(d,year,month=0){
  if(!Number.isInteger(year)||year<1900||year>9999||!Number.isInteger(month)||month<0||month>12)throw new Error('Période invalide.');
  const prefix=String(year)+(month?'-'+String(month).padStart(2,'0'):'');
@@ -131,14 +137,25 @@ export function periodReport(d,year,month=0){
  const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.startsWith(prefix));
  const income=revenues.reduce((s,r)=>s+r.cents,0),outgoings=expenses.reduce((s,r)=>s+r.cents,0);
  const monthly=Array.from({length:12},(_,i)=>{const key=String(year)+'-'+String(i+1).padStart(2,'0');const incoming=revenues.filter(r=>r.day.startsWith(key)).reduce((s,r)=>s+r.cents,0),outgoing=expenses.filter(r=>r.day.startsWith(key)).reduce((s,r)=>s+r.cents,0);return {month:i+1,income:incoming,outgoings:outgoing,cashflow:incoming-outgoing};});
- return {income,outgoings,cashflow:income-outgoings,expenses,revenues,monthly};
+ const end=month?lastDay(year,month):`${year}-12-31`;
+ return {income,outgoings,cashflow:income-outgoings,expenses,revenues,monthly,fiscal:fiscalPeriod(revenues,expenses),envelope:financeSummary(d,year,end)};
+}
+
+function lastDay(year,month){return `${year}-${String(month).padStart(2,'0')}-${String(new Date(Date.UTC(year,month,0)).getUTCDate()).padStart(2,'0')}`;}
+
+function fiscalPeriod(revenues,expenses){
+ let revenueHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0;
+ for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;}
+ for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
+ const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*.2575),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
+ return {revenueHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,reserved:vatNet+urssafReserve};
 }
 
 function validMonth(value){return typeof value==='string'&&/^\d{4}-\d{2}$/.test(value)&&date(value+'-01');}
 function validateRecurring(d){
  if(d.recurring===undefined)d.recurring=[];
  if(!Array.isArray(d.recurring))throw Error('Récurrences invalides.');const ids=new Set();
- for(const r of d.recurring){if(!r||!Number.isSafeInteger(r.id)||r.id<1||ids.has(r.id)||typeof r.label!=='string'||!r.label.trim()||r.label.length>200||typeof r.category!=='string'||!r.category.trim()||r.category.length>80||!integer(r.cents)||r.cents<=0||!integer(r.vat_cents)||r.vat_cents<0||r.vat_cents>r.cents||!payments.includes(r.payment)||!Number.isInteger(r.day)||r.day<1||r.day>31||!validMonth(r.start)||typeof r.active!=='boolean'||!Array.isArray(r.issued)||r.issued.some(m=>!validMonth(m))||new Set(r.issued).size!==r.issued.length||(r.category==='Virement personnel'&&r.vat_cents!==0))throw Error('Une récurrence est invalide.');ids.add(r.id);}
+ for(const r of d.recurring){if(!r||!Number.isSafeInteger(r.id)||r.id<1||ids.has(r.id)||typeof r.label!=='string'||!r.label.trim()||r.label.length>200||typeof r.category!=='string'||!r.category.trim()||r.category.length>80||!integer(r.cents)||r.cents<=0||!integer(r.vat_cents)||r.vat_cents<0||r.vat_cents>r.cents||!payments.includes(r.payment)||!Number.isInteger(r.day)||r.day<1||r.day>31||!validMonth(r.start)||typeof r.active!=='boolean'||!Array.isArray(r.issued)||r.issued.some(m=>!validMonth(m))||new Set(r.issued).size!==r.issued.length||(provisionKind(r.category)==='personal'&&r.vat_cents!==0))throw Error('Une récurrence est invalide.');ids.add(r.id);}
 }
 export function recurringOccurrence(d,id,month){
  const r=(d.recurring||[]).find(r=>r.id===id);if(!r||!r.active)throw Error('Récurrence inactive ou introuvable.');if(!validMonth(month)||month<r.start)throw Error('Mois antérieur au début de la récurrence ou invalide.');if(r.issued.includes(month))throw Error('Cette échéance a déjà été générée, même si la dépense a été supprimée.');

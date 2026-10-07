@@ -1,3 +1,4 @@
+import {provisionKind} from './model.mjs';
 export const receiptLimit=5000000;
 export function validateReceipt(r){
  if(!r||typeof r.name!=='string'||!r.name.length||r.name.length>255||!['image/jpeg','image/png','application/pdf'].includes(r.type)||!Number.isSafeInteger(r.size)||r.size<=0||r.size>receiptLimit||typeof r.data!=='string'||r.data.length!==4*Math.ceil(r.size/3)||!/^[A-Za-z0-9+/]*={0,2}$/.test(r.data))throw Error('Justificatif invalide (JPEG, PNG ou PDF, 5 Mo maximum).');
@@ -6,9 +7,7 @@ export function validateReceipt(r){
  return r;
 }
 export function needsReceipt(row){
- const c=row.category.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
- const provision=(c.includes('tva')&&/reverse|payee|paiement/.test(c))||(c.includes('urssaf')&&(/cotisation|payee|paiement/.test(c)||c==='urssaf'))||c.includes('impot');
- return !row.cancelled&&!row.receiptExempt&&!provision;
+ return !row.cancelled&&!row.receiptExempt&&!provisionKind(row.category);
 }
 export function missingReceipts(rows){return rows.filter(r=>needsReceipt(r)&&!r.receipt).length;}
 export function validateReceipts(rows){for(const r of rows){if(!r)throw Error('Dépense invalide.');if(r.receipt!==undefined)validateReceipt(r.receipt);if(r.receiptTrash!==undefined){if(!Array.isArray(r.receiptTrash))throw Error('Corbeille de justificatifs invalide.');r.receiptTrash.forEach(validateReceipt);}if(r.receiptExempt!==undefined&&typeof r.receiptExempt!=='boolean')throw Error('Statut justificatif invalide.');}}
