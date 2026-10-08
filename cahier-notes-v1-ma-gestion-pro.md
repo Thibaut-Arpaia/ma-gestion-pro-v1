@@ -404,3 +404,9 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Correction : à l'application d'un fond, enregistrer l'image dans un fichier séparé du dossier de comptes, sous `fonds/`, et ne garder dans le JSON que le nom, le type, la taille et le chemin. À l'ouverture du dossier, relire ce fichier pour appliquer le fond.
 - L'export "copie complète" reste autonome : il réinjecte les données du fond dans le JSON exporté. Une restauration d'une ancienne copie contenant un fond intégré le réécrit en fichier séparé.
 - Retour PC suivant : l'interface indiquait "Fond d'écran appliqué" et affichait bien le nom du fichier personnalisé, mais le visuel restait inchangé. Diagnostic : l'enregistrement fonctionne, le rendu CSS via très gros `data:` est fragile. Correction d'affichage : créer une URL locale `blob:` à partir de l'image relue et autoriser `blob:` dans `img-src`.
+
+## Validation PC fonds personnalisables — clarification V4 — 08/10/2026
+- Thibaut confirme que le correctif d'affichage du fond fonctionne sur PC : changer de fond, appliquer un autre fond et revenir au fond V3 par défaut fonctionnent.
+- Clarification importante : "Revenir au fond V3" désigne uniquement le bouton qui remet le fond d'origine validé, pas un retour de l'application en version V3. L'affichage global reste V4.
+- Retour visuel après captures PC : les onglets Dépenses, Recettes, Rapprochement, Calculatrice et Bilan affichent encore une grande plaque gris clair entre le fond d'écran et les vrais modules. Cette plaque doit être supprimée pour que le fond reste directement visible derrière les cartes.
+- Ajustement demandé : rendre les modules gris clair du Dashboard et des autres onglets légèrement plus transparents, sans modifier les textes, chiffres, icônes, calculs, opérations, rapprochement, TVA/URSSAF ni copie complète.

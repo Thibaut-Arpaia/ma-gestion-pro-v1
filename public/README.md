@@ -1,6 +1,6 @@
 # Ma Gestion Pro — V4 web pour GitHub Pages
 
-Version V4 préparée le 8 octobre 2026. Validation PC à effectuer après publication.
+Version V4 préparée le 8 octobre 2026. Fond personnalisable validé sur PC.
 
 ## Ce qui est inclus
 

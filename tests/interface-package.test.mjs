@@ -118,14 +118,14 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
  assert.match(css,/nav\{width:100%;gap:6px;overflow:hidden\}/);
  assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:clip;/);
- assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f6fbffe8,#e7f2fae4\)/);
+ assert.match(css,/\.page\{[\s\S]*border:0;[\s\S]*background:transparent;[\s\S]*box-shadow:none;/);
  assert.match(css,/\.connection-bar\{\s*display:none;\s*\}/);
- assert.match(css,/\.metrics article\{[\s\S]*background:linear-gradient\(145deg,#f8fcffd4,#eaf4fbcf\)/);
+ assert.match(css,/\.metrics article\{[\s\S]*background:linear-gradient\(145deg,#f8fcffbc,#eaf4fbb4\)/);
  assert.match(css,/\.metrics strong\{[\s\S]*color:var\(--metric-color,#071735\)/);
  assert.match(css,/\.metrics article:nth-child\(2\)\{--metric-color:#e94f80\}/);
  assert.match(css,/\.metrics article:nth-child\(4\)\{--metric-color:#1ea77d\}/);
- assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffd8,#e9f4fbd3\)/);
- assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbfff0/);
+ assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffbf,#e9f4fbb5\)/);
+ assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbffc2/);
 });
 
 test('Dashboard V3 : le compteur tickets reste aligné avec les autres indicateurs',async()=>{
