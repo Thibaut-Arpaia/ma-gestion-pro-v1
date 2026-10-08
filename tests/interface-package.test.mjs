@@ -34,6 +34,8 @@ test('V4 : le fond d’écran est personnalisable sans modifier l’interface',a
  assert.match(app,/call\('saveBackground'/);
  assert.match(app,/call\('resetBackground'/);
  assert.match(app,/--dashboard-bg/);
+ assert.match(app,/URL\.createObjectURL\(new Blob\(\[bytes\],\{type:bg\.type\}\)\)/);
+ assert.match(html,/img-src 'self' data: blob:/);
  assert.match(storage,/writeBackgroundAsset/);
  assert.match(storage,/backgroundFolder='fonds'/);
  assert.match(storage,/hydrateBackground/);

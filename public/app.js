@@ -75,10 +75,20 @@ async function selectedBackground(){
  const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('Lecture du fond impossible.'));reader.readAsDataURL(file);});
  return {name:file.name,type:file.type,size:file.size,data};
 }
+let backgroundObjectUrl=null,backgroundObjectKey='';
+function backgroundUrl(bg){
+ const key=`${bg.name}|${bg.size}|${bg.path||''}|${bg.data?.slice(0,24)||''}`;
+ if(backgroundObjectUrl&&backgroundObjectKey===key)return backgroundObjectUrl;
+ if(backgroundObjectUrl)URL.revokeObjectURL(backgroundObjectUrl);
+ const bytes=Uint8Array.from(atob(bg.data),c=>c.charCodeAt(0));
+ backgroundObjectUrl=URL.createObjectURL(new Blob([bytes],{type:bg.type}));
+ backgroundObjectKey=key;
+ return backgroundObjectUrl;
+}
 function applyBackground(){
  const bg=state?.preferences?.background;
- if(bg)document.body.style.setProperty('--dashboard-bg',`url("data:${bg.type};base64,${bg.data}")`);
- else document.body.style.removeProperty('--dashboard-bg');
+ if(bg?.data)document.body.style.setProperty('--dashboard-bg',`url("${backgroundUrl(bg)}")`);
+ else{if(backgroundObjectUrl){URL.revokeObjectURL(backgroundObjectUrl);backgroundObjectUrl=null;backgroundObjectKey='';}document.body.style.removeProperty('--dashboard-bg');}
  text('#background-status',bg?`Fond personnalisé : ${bg.name} (${Math.round(bg.size/1024)} Ko)`:'Fond V3 par défaut.');
 }
 function text(id,value){const el=$(id);if(el)el.textContent=value;}
