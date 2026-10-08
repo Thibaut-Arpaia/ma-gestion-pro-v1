@@ -510,19 +510,37 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
 @media(min-width:1000px){
  .topbar{
   inset:28px auto 28px 24px;
-  padding:23px 16px 18px;
-  gap:20px;
+  padding:24px 16px 18px;
+  gap:18px;
+  border-color:#1b3f64;
+  background:
+   radial-gradient(circle at 36% 10%,#ff5fb43a 0,#ff5fb414 22%,transparent 48%),
+   radial-gradient(circle at 86% 20%,#33d8ff26 0,transparent 42%),
+   linear-gradient(180deg,#111a31f8 0,#07182bf7 47%,#051220fa 100%);
+  box-shadow:0 30px 75px #06142666,inset 0 1px #ffffff24,inset 0 -1px #153b5b;
  }
  .logo{
-  min-height:116px;
-  padding:2px 4px 0 10px;
-  color:#ff7ac3;
-  text-shadow:0 0 7px #ff8fd0,0 0 18px #ff2d9a,0 0 42px #ff2d8890;
-  font-size:32px;
-  line-height:.94;
+  position:relative;
+  min-height:132px;
+  padding:8px 8px 22px 8px;
+  color:#ff63bd;
+  text-shadow:0 0 4px #fff2fb,0 0 11px #ff65c9,0 0 24px #ff279f,0 0 52px #ff2d8890;
+  font-size:35px;
+  line-height:.9;
   justify-content:center;
+  letter-spacing:-.055em;
  }
- .logo::before{content:'Ma\A Gestion\A Pro';white-space:pre-line;color:#ff7ac3}
+ .logo::before{content:'Ma Gestion\A Pro';white-space:pre-line;color:#ff63bd;transform:rotate(-4deg)}
+ .logo::after{
+  content:'';
+  position:absolute;
+  left:6px;
+  right:6px;
+  bottom:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#ffffff22 10%,#ff69be72 50%,#51d7ff38 86%,transparent);
+  box-shadow:0 0 16px #ff5fb455;
+ }
 }
 
 @media(max-width:999px){

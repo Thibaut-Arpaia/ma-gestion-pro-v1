@@ -91,7 +91,7 @@ test('Interface V3 : les libellés du menu restent dans le cadre',async()=>{
  const css=await readFile(path.join(root,'style.css'),'utf8');
  assert.match(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
  assert.match(css,/\.logo\{[\s\S]*justify-content:flex-start;[\s\S]*text-align:left;/);
- assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
+ assert.match(css,/content:'Ma Gestion\\A Pro'/);
  assert.match(css,/nav button\{[\s\S]*white-space:normal;[\s\S]*line-height:1\.15;/);
  assert.match(css,/nav button\[data-view='settings'\]\{min-height:58px\}/);
 });
@@ -114,10 +114,12 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/\.hero\{\s*display:none;\s*\}/);
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
  assert.match(css,/\.version-note\{[\s\S]*position:fixed;[\s\S]*right:24px;[\s\S]*bottom:16px;/);
- assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:32px;/);
- assert.match(css,/\.logo\{[\s\S]*min-height:116px;/);
- assert.match(css,/text-shadow:0 0 7px #ff8fd0,0 0 18px #ff2d9a,0 0 42px #ff2d8890/);
- assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
+ assert.match(css,/radial-gradient\(circle at 36% 10%,#ff5fb43a 0,#ff5fb414 22%,transparent 48%\)/);
+ assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:35px;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:132px;/);
+ assert.match(css,/text-shadow:0 0 4px #fff2fb,0 0 11px #ff65c9,0 0 24px #ff279f,0 0 52px #ff2d8890/);
+ assert.match(css,/content:'Ma Gestion\\A Pro'/);
+ assert.match(css,/\.logo::after\{[\s\S]*background:linear-gradient\(90deg,transparent,#ffffff22 10%,#ff69be72 50%,#51d7ff38 86%,transparent\)/);
  assert.match(css,/nav\{width:100%;gap:6px;overflow:hidden\}/);
  assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:clip;/);
  assert.match(css,/\.page\{[\s\S]*max-width:1180px;[\s\S]*background:linear-gradient\(145deg,#f6fbff82,#e7f2fa72\)/);
