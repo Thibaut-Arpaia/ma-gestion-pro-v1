@@ -225,6 +225,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 
  nav button[data-view='bank']::before{content:'⇄';color:#32c6ff}
  nav button[data-view='calculator']::before{content:'🧮';color:#b667ff}
  nav button[data-view='reports']::before{content:'📊';color:#35d3ad}
+ nav button[data-view='fiscal']::before{content:'%';color:#f05b7f;font-weight:900}
  nav button[data-view='settings']::before{content:'⚙';color:#dce9f7}
  nav button.active{
   border-left-color:var(--pink);
@@ -593,7 +594,72 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  border-color:#35d3ad;
  background:#ecfbf6;
 }
+.fiscal-kpis{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:14px;
+ margin-bottom:18px;
+}
+.fiscal-kpis article{
+ display:flex;
+ align-items:center;
+ gap:16px;
+ min-height:105px;
+ padding:18px;
+ border:1px solid #c5d7e5;
+ border-radius:14px;
+ background:linear-gradient(145deg,#f8fcffc9,#eaf4fbb8);
+ box-shadow:0 16px 38px #17324a1d,inset 0 1px #fff;
+ backdrop-filter:blur(8px);
+}
+.fiscal-kpis h2{margin:0 0 5px;font-size:14px;color:#071735}
+.fiscal-kpis strong{font-size:26px;color:#1682ee;font-variant-numeric:tabular-nums}
+.fiscal-kpis article:nth-child(1) strong{color:#f06c22}
+.fiscal-kpis article:nth-child(2) strong{color:#1682ee}
+.fiscal-kpis article:nth-child(3) strong{color:#8b5cf6}
+.fiscal-kpis article:nth-child(4) strong{color:#18a978}
+.fiscal-grid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:18px;
+ margin-top:18px;
+ align-items:start;
+}
+.reserve-bar{
+ height:14px;
+ margin-top:18px;
+ overflow:hidden;
+ border-radius:999px;
+ background:#d5e3ee;
+}
+.reserve-bar i{
+ display:block;
+ height:100%;
+ width:0;
+ border-radius:inherit;
+ background:linear-gradient(90deg,#f4b33f,#f05b7f);
+}
+.urssaf-card .reserve-bar i{background:linear-gradient(90deg,#238bea,#6d7cff)}
+.fiscal-payments{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:18px;
+}
+.fiscal-payments form{
+ padding:16px;
+ border:1px solid #c5d7e5;
+ border-radius:12px;
+ background:#f8fcff92;
+}
+.fiscal-payments h3{margin:0 0 14px;color:#071735}
+.fiscal-help p{
+ margin:12px 0;
+ padding-left:14px;
+ border-left:4px solid #35d3ad;
+ color:#31516b;
+}
 @media(max-width:620px){
  .dashboard-actions{width:100%;display:grid;grid-template-columns:1fr}
  .dashboard-actions button{width:100%}
 }
+@media(max-width:900px){.fiscal-grid,.fiscal-payments{grid-template-columns:1fr}}

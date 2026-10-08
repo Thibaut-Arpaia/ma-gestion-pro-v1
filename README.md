@@ -1,17 +1,18 @@
-# Ma Gestion Pro — V4.1 web pour GitHub Pages
+# Ma Gestion Pro — V4.2 test web pour GitHub Pages
 
-Version V4.1 préparée le 8 octobre 2026. Fond personnalisable validé sur PC, aide au pointage CSV ajoutée.
+Version V4.2 test préparée le 8 octobre 2026. Fond personnalisable validé sur PC, aide au pointage CSV, onglet TVA / URSSAF, récurrences automatiques et justificatifs en dossier physique.
 
 ## Ce qui est inclus
 
 - Dashboard avec visuel immobilier clair V3, menu gauche arrondi, indicateurs TVA/URSSAF et argent réellement libre.
 - Actions rapides Dashboard : ajouter une dépense ou une recette.
-- Dépenses, recettes, justificatifs, corbeille de tickets et alertes de doublons.
+- Dépenses, recettes, justificatifs enregistrés dans `justificatifs/`, corbeille de tickets et alertes de doublons.
 - Rapprochement bancaire manuel avec pointage, clôture, réouverture, confettis et son.
 - Aide au pointage depuis CSV bancaire : seules les opérations déjà saisies avec une correspondance unique sont pointées, aucune ligne comptable n’est créée automatiquement.
+- Onglet TVA / URSSAF dédié : consultation des réserves, détails collecté/déductible/payé et enregistrement guidé des paiements avec catégorie sécurisée.
 - Calculatrice de commission agence TTC avec barème progressif.
 - Bilan mensuel/annuel avec détails, provisions fiscales de la période et enveloppes cumulées.
-- Récurrences mensuelles et virement personnel sans TVA ni provision fiscale.
+- Récurrences mensuelles automatiques à l’ouverture du dossier et virement personnel sans TVA ni provision fiscale.
 - Contrôles Dashboard : doublons, tickets manquants et pointages en attente jusqu’à aujourd’hui.
 - Personnalisation du fond d’écran depuis Réglages & sauvegardes, sans modifier l’interface. L’image est conservée dans le dossier `fonds/` du compte pour éviter d’alourdir le fichier principal.
 - Téléchargement d’une copie complète JSON de secours.
@@ -22,7 +23,7 @@ Les comptes restent dans le dossier local choisi par l’utilisateur. Aucun fich
 
 À chaque session, cliquer sur **Ouvrir mon dossier** pour retrouver les comptes. L’accès demande un navigateur compatible File System Access API et une page HTTPS. Les copies de sécurité sont placées dans le sous-dossier `sauvegardes`.
 
-Le bouton **Télécharger une copie complète** exporte un JSON de secours immédiat. Cette copie contient aussi les tickets, récurrences, préférences, fond personnalisé et opérations supprimées conservées.
+Le bouton **Télécharger une copie complète** exporte un JSON de secours immédiat. Cette copie réintègre aussi les tickets, récurrences, préférences, fond personnalisé et opérations supprimées conservées.
 
 La synchronisation pCloud est gérée séparément par l’utilisateur. La version mobile et la synchronisation bidirectionnelle ne sont pas encore validées comme module complet.
 

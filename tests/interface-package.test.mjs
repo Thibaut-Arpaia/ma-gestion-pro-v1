@@ -8,7 +8,7 @@ const root=path.resolve(import.meta.dirname,'..');
 test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/V4\.1 web · import CSV bancaire · copie complète/);
+ assert.match(html,/V4\.2 test · TVA\/URSSAF · justificatifs dossier/);
  assert.match(html,/class="muted version-note"/);
  assert.doesNotMatch(html,/class="dashboard-title"/);
  assert.doesNotMatch(html,/class="scope"/);
@@ -52,14 +52,16 @@ test('Réglages : une copie complète JSON peut être téléchargée',async()=>{
  assert.match(app,/call\('exportData'\)/);
  assert.match(app,/new Blob\(\[data\.json\],\{type:'application\/json'\}\)/);
  assert.match(storage,/if\(action==='exportData'\)/);
- assert.match(storage,/JSON\.stringify\(await hydrateBackground\(data\),null,2\)/);
+ assert.match(storage,/JSON\.stringify\(await hydrateFiles\(data\),null,2\)/);
+ assert.match(storage,/receiptFolder='justificatifs'/);
+ assert.match(storage,/writeReceiptAsset/);
 });
 
 test('Documentation V4 : les nouveautés et le ZIP complet restent cadrés',async()=>{
  const readme=await readFile(path.join(root,'README.md'),'utf8');
  const v4=await readFile(path.join(root,'V4.md'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(readme,/Ma Gestion Pro — V4\.1 web pour GitHub Pages/);
+ assert.match(readme,/Ma Gestion Pro — V4\.2 test web pour GitHub Pages/);
  assert.match(readme,/Personnalisation du fond d’écran/);
  assert.match(readme,/Téléchargement d’une copie complète JSON/);
  assert.match(readme,/ZIP complet GitHub/);
@@ -155,6 +157,16 @@ test('Dashboard : les panneaux principaux restent repliables',async()=>{
  assert.match(css,/\.lower\{[^}]*align-items:start/);
 });
 
+test('Récurrences : l’interface annonce la génération automatique',async()=>{
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const storage=await readFile(path.join(root,'storage.mjs'),'utf8');
+ assert.match(app,/les échéances dues se créent automatiquement à l’ouverture du dossier/);
+ assert.match(app,/Active automatiquement/);
+ assert.doesNotMatch(app,/Créer la dépense du/);
+ assert.match(storage,/autoIssueRecurring\(change\(before,action,payload\),today\(\)\)/);
+ assert.match(storage,/readWithRecurringAutoSave/);
+});
+
 test('Bilan : les blocs fiscaux restent lisibles à l’impression',async()=>{
  const app=await readFile(path.join(root,'app.js'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
@@ -163,6 +175,20 @@ test('Bilan : les blocs fiscaux restent lisibles à l’impression',async()=>{
  assert.match(app,/Estimations de pilotage basées sur les saisies de la période/);
  assert.match(app,/Cumul annuel jusqu’au dernier jour consulté/);
  assert.match(css,/body\.printing-report #period-report \.report-fiscal\{background:white!important;border-color:#999!important\}/);
+});
+
+test('TVA / URSSAF : onglet dédié et paiements sécurisés',async()=>{
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(app,/dataset\.view='fiscal'/);
+ assert.match(app,/TVA \/ URSSAF/);
+ assert.match(app,/financeSummary\(state,year,today\(\)\)/);
+ assert.match(app,/category:vat\?'TVA reversée':'Cotisations URSSAF'/);
+ assert.match(app,/payment:'Virement',vat:'0'/);
+ assert.match(app,/receiptExempt:true/);
+ assert.match(app,/id="fiscal-payment-history"/);
+ assert.match(css,/\.fiscal-kpis/);
+ assert.match(css,/nav button\[data-view='fiscal'\]::before/);
 });
 
 test('Contrôles : le Dashboard signale aussi les pointages en attente',async()=>{

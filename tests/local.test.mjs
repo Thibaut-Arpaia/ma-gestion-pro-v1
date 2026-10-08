@@ -8,6 +8,7 @@ const near=(actual,expected,delta=1)=>assert.ok(Math.abs(actual-expected)<=delta
 const setup={day:'2026-09-01',balance:'1 000,00',next:'100'};
 const expense={day:'2026-09-15',amount:'42,50',vat:'7,08',label:'Test',category:'Restaurant',payment:'Carte pro',notes:''};
 const revenue={day:'2026-09-20',amount:'12000,00',vat:'2000,00',label:'Commission test',category:'Commission immobilière',notes:''};
+const withoutPath=r=>{const {path:_,...rest}=r;return rest;};
 test('Dépenses : montants, historique, références et annulation',()=>{
  let d=change(empty(),'setup',setup);d=change(d,'save',expense);assert.equal(d.expenses[0].cents,4250);assert.equal(d.expenses[0].ref,100);assert.equal(d.next,101);
  d=change(d,'save',{...expense,day:'2026-08-30',ref:'99'});assert.equal(d.expenses[1].historical,true);assert.equal(d.next,101);
@@ -42,14 +43,14 @@ test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans fa
  try{
  const receipt={name:'ticket.pdf',type:'application/pdf',size:9,data:Buffer.from('%PDF-1.4\n').toString('base64')};
  const background={name:'fond-test.webp',type:'image/webp',size:1200,data:Buffer.from('fond-test').toString('base64')};
- const a=await import('../storage.mjs?test1');await a.run('connect');await a.run('setup',setup);await a.run('save',{...expense,receipt});await a.run('saveRecurring',{label:'Abonnement disque',category:'Abonnements',amount:'24',vat:'4',payment:'Prélèvement',day:15,start:'2026-09'});await a.run('saveBackground',background);
- const b=await import('../storage.mjs?test2');assert.equal((await b.run('state')).connected,false);const reopened=await b.run('connect');assert.equal(reopened.expenses[0].cents,4250);assert.deepEqual(reopened.expenses[0].receipt,receipt);assert.equal(reopened.recurring[0].label,'Abonnement disque');
+ const a=await import('../storage.mjs?test1');await a.run('connect');await a.run('setup',setup);await a.run('save',{...expense,receipt});await a.run('saveRecurring',{label:'Abonnement disque',category:'Abonnements',amount:'24',vat:'4',payment:'Prélèvement',day:15,start:'2026-12'});await a.run('saveBackground',background);
+ const b=await import('../storage.mjs?test2');assert.equal((await b.run('state')).connected,false);const reopened=await b.run('connect');assert.equal(reopened.expenses[0].cents,4250);assert.deepEqual(withoutPath(reopened.expenses[0].receipt),receipt);assert.match(reopened.expenses[0].receipt.path,/^justificatifs\/DEP-000100-test-/);assert.equal(reopened.recurring[0].label,'Abonnement disque');
  assert.equal(reopened.preferences.background.name,background.name);assert.equal(reopened.preferences.background.data,background.data);assert.match(reopened.preferences.background.path,/^fonds\/fond-/);
- const savedJson=JSON.parse(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'));assert.equal(savedJson.preferences.background.data,undefined);assert.match(savedJson.preferences.background.path,/^fonds\/fond-/);
+ const savedJson=JSON.parse(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'));assert.equal(savedJson.preferences.background.data,undefined);assert.match(savedJson.preferences.background.path,/^fonds\/fond-/);assert.equal(savedJson.expenses[0].receipt.data,undefined);assert.match(savedJson.expenses[0].receipt.path,/^justificatifs\/DEP-000100-test-/);
  const saved=await b.run('backup');selection=path.join(root,'sauvegardes',saved.file);
  await Promise.all([b.run('save',expense),b.run('save',expense)]);assert.equal((await b.run('state')).next,103);
- await b.run('restore');assert.equal((await b.run('state')).recurring[0].label,'Abonnement disque');assert.equal((await b.run('state')).expenses.length,1);assert.deepEqual((await b.run('state')).expenses[0].receipt,receipt);assert.equal((await b.run('state')).preferences.background.data,background.data);
- const exported=await b.run('exportData'),exportData=JSON.parse(exported.json);assert.match(exported.name,/^ma-gestion-pro-export-\d{4}-\d{2}-\d{2}\.json$/);assert.equal(exportData.expenses.length,1);assert.equal(exportData.preferences.background.data,background.data);assert.deepEqual(exportData.expenses[0].receipt,receipt);
+ await b.run('restore');assert.equal((await b.run('state')).recurring[0].label,'Abonnement disque');assert.equal((await b.run('state')).expenses.length,1);assert.deepEqual(withoutPath((await b.run('state')).expenses[0].receipt),receipt);assert.equal((await b.run('state')).preferences.background.data,background.data);
+ const exported=await b.run('exportData'),exportData=JSON.parse(exported.json);assert.match(exported.name,/^ma-gestion-pro-export-\d{4}-\d{2}-\d{2}\.json$/);assert.equal(exportData.expenses.length,1);assert.equal(exportData.preferences.background.data,background.data);assert.deepEqual(withoutPath(exportData.expenses[0].receipt),receipt);
  await b.run('resetBackground');assert.equal((await b.run('state')).preferences.background,null);
  const prior=await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8');fail=true;await assert.rejects(b.run('save',expense),/Disque indisponible/);fail=false;
  assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
@@ -57,7 +58,7 @@ test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans fa
  await b.run('remove',1);assert.equal((await b.run('state')).expenses.length,0);assert.equal((await b.run('state')).next,100);const deletedExport=JSON.parse((await b.run('exportData')).json);assert.equal(deletedExport.expenses.length,1);assert.equal(deletedExport.expenses[0].cancelled,true);
  await b.run('save',{...expense,receipt});await b.run('clearBank',{kind:'expense',id:2,day:'2026-09-15'});await b.run('closeBank',{end:'2026-09-30',balance:'957.50'});
  const c=await import('../storage.mjs?test3');await c.run('connect');assert.equal((await c.run('state')).bankClosures.length,1);assert.equal((await c.run('state')).expenses[0].clearedDay,'2026-09-15');
- const closedBackup=await c.run('backup');selection=path.join(root,'sauvegardes',closedBackup.file);await c.run('reopenBank',{});assert.equal((await c.run('state')).bankClosures.length,0);await c.run('restore');assert.equal((await c.run('state')).bankClosures.length,1);assert.deepEqual((await c.run('state')).expenses[0].receipt,receipt);
+ const closedBackup=await c.run('backup');selection=path.join(root,'sauvegardes',closedBackup.file);await c.run('reopenBank',{});assert.equal((await c.run('state')).bankClosures.length,0);await c.run('restore');assert.equal((await c.run('state')).bankClosures.length,1);assert.deepEqual(withoutPath((await c.run('state')).expenses[0].receipt),receipt);
  }finally{await fs.rm(root,{recursive:true,force:true});}
 });
 test('Recettes : création, modification, suppression et validation',()=>{
@@ -180,6 +181,21 @@ test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=
  f=financeSummary(d,2026);
  assert.equal(f.vatDeductible,2000);
  assert.equal(f.reserved,361750);
+});
+test('Module TVA/URSSAF : paiements guidés sans TVA ni justificatif obligatoire',()=>{
+ let d=change(empty(),'setup',setup);
+ d=change(d,'saveRevenue',{...revenue,day:'2026-09-20',amount:'14000',vat:'0'});
+ d=change(d,'save',{...expense,day:'2026-09-22',amount:'1000',vat:'0',label:'Paiement TVA',category:'TVA reversée',payment:'Virement',receiptExempt:true});
+ d=change(d,'save',{...expense,day:'2026-09-23',amount:'500',vat:'0',label:'Paiement URSSAF',category:'Cotisations URSSAF',payment:'Virement',receiptExempt:true});
+ assert.equal(d.expenses.at(-2).vat_cents,0);
+ assert.equal(d.expenses.at(-2).receiptExempt,true);
+ assert.equal(d.expenses.at(-1).vat_cents,0);
+ assert.equal(d.expenses.at(-1).receiptExempt,true);
+ const f=financeSummary(d,2026);
+ assert.equal(f.vatPaid,100000);
+ assert.equal(f.urssafPaid,50000);
+ assert.equal(f.vatNet,133333);
+ assert.equal(f.urssafReserve,250417);
 });
 test('Audit calculs : recettes modifiées/supprimées et provisions ignorées correctement',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});

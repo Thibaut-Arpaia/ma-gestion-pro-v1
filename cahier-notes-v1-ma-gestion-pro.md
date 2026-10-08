@@ -151,6 +151,7 @@ Priorite : a corriger avant validation propre de la V1.
 - Compteur des justificatifs manquants : depenses actives sans ticket, hors paiements TVA/URSSAF/impots et lignes marquees "Justificatif non requis". Une depense supprimee conserve ses pieces dans les donnees sauvegardees.
 - Limites de cette premiere integration : 5 Mo par ticket et 20 Mo pour le fichier JSON complet, corbeille incluse. Ce stockage convient aux essais ; externaliser les pieces dans un dossier dedie avant un usage volumineux. Aucun OCR, detection de doublons ou synchronisation mobile ajoute dans ce bloc.
 - Verification : 12 tests automatises passent (9 existants et 3 justificatifs), dont ecriture disque, sauvegarde, restauration et reouverture avec ticket. Controle visuel navigateur non realise : executable absent et telechargement bloque. Un essai reel d'ajout/telechargement reste necessaire.
+- Note V4.2 : la règle actuelle remplace le stockage V1.2 dans le JSON. Les justificatifs sont externalisés dans `justificatifs/`; le JSON conserve les chemins et l'export complet réintègre les données.
 
 
 - Plusieurs depenses sur une meme session.
@@ -208,6 +209,7 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Prévention : même récurrence/mois jamais générée deux fois, même après suppression de la dépense. Dépense manuelle identique bloque la génération ; période clôturée protégée.
 - Les échéances peuvent être créées pour un mois choisi à venir ; elles sont incluses dans le bilan des saisies et restent non pointées.
 - Les anciens dossiers restent compatibles. Sauvegarde et restauration incluent les récurrences. Validation : 26 tests Node et parcours d’interface simulée. Essai réel du nouveau panneau à faire sur PC.
+- Note V4.2 : la règle actuelle remplace la création mensuelle manuelle. Les échéances dues sont créées automatiquement à l'ouverture du dossier ou après modification du modèle ; le pointage bancaire reste manuel.
 
 ## V1.4.1 — Blocs repliables du Dashboard
 - Décision utilisateur : Bilan, Dernières dépenses et Contrôles à examiner déployables au clic sur leur titre, réduits au deuxième clic, avec flèche.
@@ -219,6 +221,7 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Thibaut confirme les blocs repliables ; le virement personnel a été créé après repérage du second bouton.
 - Anomalie ergonomique : confusion entre sauvegarder le modèle mensuel et créer sa dépense.
 - Libellés : « Enregistrer le modèle » puis « Créer la dépense du JJ/MM/AAAA ». Message après sauvegarde indiquant explicitement la seconde étape.
+- Note V4.2 : ce libellé historique n'est plus valable. Le modèle suffit ; les échéances dues sont créées automatiquement.
 - Le parcours simulé crée le virement personnel et vérifie TTC 2 000 €, TVA 0 €, justificatif non requis.
 
 ## V1.4.3 — Navigation simplifiée, décision du 02/10/2026
@@ -420,3 +423,24 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Règle de sécurité : le CSV ne crée aucune dépense et aucune recette. Il pointe seulement les opérations déjà saisies si la date et le montant donnent une correspondance unique.
 - Les lignes ambiguës, non reconnues, hors fenêtre de date ou déjà clôturées restent à pointer manuellement.
 - Aucun changement des calculs TVA/URSSAF, argent disponible, bilan, récurrences, justificatifs, sauvegardes ou fond d'écran.
+
+## Lot fonctionnel suivant — onglet TVA / URSSAF — 08/10/2026
+- Ajout d'un onglet dédié "TVA / URSSAF" pour rendre lisibles les réserves fiscales et sociales déjà calculées.
+- L'onglet affiche TVA collectée, TVA déductible, TVA déjà reversée, TVA nette à réserver, base HT encaissée, cotisations URSSAF estimées, URSSAF déjà payée, reste à réserver, total réservé et argent réellement libre.
+- Les paiements TVA et URSSAF peuvent être enregistrés depuis cet onglet. Ils créent une dépense normale avec catégorie automatique "TVA reversée" ou "Cotisations URSSAF", paiement par virement, TVA à zéro et justificatif non requis.
+- Aucun nouveau calcul fiscal n'est introduit : l'onglet utilise les fonctions existantes `financeSummary` et `dashboardSummary`.
+- Contrôles locaux : syntaxes JavaScript OK et tests Node OK. ZIP non généré à ce stade.
+
+## Correction cahier des charges — récurrences automatiques — 08/10/2026
+- Clarification utilisateur : une dépense récurrente enregistrée dans Réglages doit se créer automatiquement tous les mois à la date prévue, sans validation mensuelle.
+- Cette règle remplace les notes précédentes qui parlaient de création mensuelle manuelle sur bouton.
+- Génération à l'ouverture du dossier et après modification d'un modèle : toutes les échéances dues jusqu'à aujourd'hui sont créées.
+- Garde-fous : pas de double création pour un même mois, ligne manuelle identique reconnue comme échéance déjà traitée, périodes clôturées non modifiées, jour absent ramené au dernier jour du mois.
+- Les échéances automatiques restent non pointées ; le rapprochement bancaire reste manuel.
+
+## Correction cahier des charges — justificatifs en dossier physique — 08/10/2026
+- Les justificatifs PDF/JPEG/PNG doivent être enregistrés dans un dossier physique `justificatifs/` du dossier de comptes.
+- Le fichier `ma-gestion-pro.json` conserve seulement les métadonnées utiles et le chemin du fichier ; l'export complet réintègre les données du justificatif pour produire une copie autonome.
+- Le nom du fichier physique reprend la référence de dépense existante quand elle est disponible, sous forme `DEP-000100-libelle-...pdf` par exemple. Aucune logique nouvelle de référence n'est créée.
+- Les anciens justificatifs encore présents en base64 dans le JSON restent compatibles et sont externalisés lors du prochain enregistrement/restauration.
+- La corbeille de justificatifs reste conservée, avec les fichiers déplacés eux aussi dans `justificatifs/`.

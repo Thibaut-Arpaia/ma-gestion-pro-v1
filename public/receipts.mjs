@@ -1,9 +1,14 @@
 import {provisionKind} from './model.mjs';
 export const receiptLimit=5000000;
 export function validateReceipt(r){
- if(!r||typeof r.name!=='string'||!r.name.length||r.name.length>255||!['image/jpeg','image/png','application/pdf'].includes(r.type)||!Number.isSafeInteger(r.size)||r.size<=0||r.size>receiptLimit||typeof r.data!=='string'||r.data.length!==4*Math.ceil(r.size/3)||!/^[A-Za-z0-9+/]*={0,2}$/.test(r.data))throw Error('Justificatif invalide (JPEG, PNG ou PDF, 5 Mo maximum).');
- const prefix=r.type==='application/pdf'?'JVBERi0':r.type==='image/png'?'iVBORw0KGgo':'/9j/';
- if(!r.data.startsWith(prefix))throw Error('Le contenu du justificatif ne correspond pas à son format.');
+ if(!r||typeof r.name!=='string'||!r.name.length||r.name.length>255||!['image/jpeg','image/png','application/pdf'].includes(r.type)||!Number.isSafeInteger(r.size)||r.size<=0||r.size>receiptLimit)throw Error('Justificatif invalide (JPEG, PNG ou PDF, 5 Mo maximum).');
+ if(r.data!==undefined){
+  if(typeof r.data!=='string'||r.data.length!==4*Math.ceil(r.size/3)||!/^[A-Za-z0-9+/]*={0,2}$/.test(r.data))throw Error('Justificatif invalide (JPEG, PNG ou PDF, 5 Mo maximum).');
+  const prefix=r.type==='application/pdf'?'JVBERi0':r.type==='image/png'?'iVBORw0KGgo':'/9j/';
+  if(!r.data.startsWith(prefix))throw Error('Le contenu du justificatif ne correspond pas à son format.');
+ }
+ if(r.path!==undefined&&(typeof r.path!=='string'||!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(r.path)))throw Error('Chemin du justificatif invalide.');
+ if(r.data===undefined&&r.path===undefined)throw Error('Justificatif invalide (JPEG, PNG ou PDF, 5 Mo maximum).');
  return r;
 }
 export function needsReceipt(row){

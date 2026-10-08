@@ -186,6 +186,16 @@ export function recurringOccurrence(d,id,month){
  return {day,label:r.label,category:r.category,cents:r.cents,vat_cents:r.vat_cents,payment:r.payment};
 }
 
+export function autoIssueRecurring(source,asOf){
+ const d=structuredClone(validate(source));if(!d.setup||!date(asOf))return d;let changed=false;
+ for(const r of d.recurring||[]){if(!r.active)continue;let month=r.start;
+  while(month<=asOf.slice(0,7)){if(!r.issued.includes(month)){const [year,m]=month.split('-').map(Number),last=new Date(Date.UTC(year,m,0)).getUTCDate(),day=month+'-'+String(Math.min(r.day,last)).padStart(2,'0');if(day>=d.setup.day&&day<=asOf){const existing=d.expenses.some(row=>!row.cancelled&&row.day===day&&row.cents===r.cents&&normCategory(row.label)===normCategory(r.label));if(existing){r.issued.push(month);changed=true;}else if(!d.bankClosures?.some(c=>day<=c.end)){const id=d.expenses.reduce((max,row)=>Math.max(max,row.id),0)+1;d.expenses.push({day,label:r.label,category:r.category,cents:r.cents,vat_cents:r.vat_cents,payment:r.payment,id,ref:null,historical:false,cancelled:false,notes:'Échéance mensuelle automatique',recurringId:r.id,recurringMonth:month,receiptExempt:provisionKind(r.category)==='personal'});r.issued.push(month);changed=true;}}}
+  const next=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1));month=`${next.getUTCFullYear()}-${String(next.getUTCMonth()+1).padStart(2,'0')}`;}
+ }
+ if(changed){renumber(d);d.revision++;}
+ return validate(d);
+}
+
 // Indicateurs du jour ; le bilan des saisies conserve son périmètre complet.
 export function dashboardSummary(d,asOf){
  if(!date(asOf))throw Error('Date de calcul invalide.');

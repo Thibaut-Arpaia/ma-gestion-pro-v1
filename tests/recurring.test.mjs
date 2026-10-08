@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {empty,change,validate,recurringOccurrence,financeSummary} from '../model.mjs';
+import {empty,change,validate,recurringOccurrence,financeSummary,autoIssueRecurring} from '../model.mjs';
 const start=()=>change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
 const template={label:'Téléphone',category:'Téléphonie',amount:'24',vat:'4',payment:'Prélèvement',day:'31',start:'2026-01'};
 test('Récurrences : fin de mois, année bissextile et absence de dépense lors de la préparation',()=>{let d=change(start(),'saveRecurring',template);assert.equal(d.expenses.length,0);assert.equal(recurringOccurrence(d,1,'2026-02').day,'2026-02-28');assert.equal(recurringOccurrence(d,1,'2028-02').day,'2028-02-29');assert.equal(recurringOccurrence(d,1,'2026-04').day,'2026-04-30');d=change(d,'issueRecurring',{id:1,month:'2026-02'});assert.equal(d.expenses[0].cents,2400);assert.equal(d.expenses[0].vat_cents,400);assert.equal(d.expenses[0].clearedDay,undefined);assert.equal(d.expenses[0].ref,1);});
@@ -7,3 +7,24 @@ test('Récurrences : pas de double génération après suppression ou modificati
 test('Récurrences : pause, dates et données invalides, doublon manuel',()=>{let d=change(start(),'saveRecurring',template);assert.throws(()=>recurringOccurrence(d,1,'2025-12'));assert.throws(()=>change(d,'saveRecurring',{...template,day:0}));d=change(d,'toggleRecurring',1);assert.throws(()=>change(d,'issueRecurring',{id:1,month:'2026-02'}),/inactive/);d=change(d,'toggleRecurring',1);d=change(d,'save',{day:'2026-02-28',label:'Téléphone',category:'Téléphonie',amount:'24',vat:'4',payment:'Prélèvement',notes:''});assert.throws(()=>change(d,'issueRecurring',{id:1,month:'2026-02'}),/identique/);});
 test('Récurrences : virement personnel TVA zéro, solde réduit sans provision fiscale nouvelle',()=>{let d=change(start(),'saveRecurring',{...template,label:'Virement personnel',category:'virement personnel',amount:'2000',vat:'333.33',payment:'Virement',day:1});d=change(d,'issueRecurring',{id:1,month:'2026-02'});assert.equal(d.expenses[0].vat_cents,0);assert.equal(d.expenses[0].receiptExempt,true);assert.equal(100000-d.expenses[0].cents,-100000);assert.equal(financeSummary(d,2026).reserved,0);});
 test('Récurrences : clôture protégée, ancien fichier compatible et départ en cours de mois',()=>{let d=start();d=change(d,'closeBank',{end:'2026-02-28',balance:'1000'});d=change(d,'saveRecurring',template);assert.throws(()=>change(d,'issueRecurring',{id:1,month:'2026-02'}));assert.equal(d.expenses.length,0);const old=empty();delete old.recurring;assert.deepEqual(validate(old).recurring,[]);d=change(empty(),'setup',{day:'2026-02-15',balance:'1000',next:1});d=change(d,'saveRecurring',{...template,day:1});assert.throws(()=>recurringOccurrence(d,1,'2026-02'),/point de départ/);});
+test('Récurrences automatiques : génération jusqu’à aujourd’hui sans doublon',()=>{
+ let d=change(start(),'saveRecurring',{...template,day:5,start:'2026-01'});
+ d=autoIssueRecurring(d,'2026-03-20');
+ assert.equal(d.expenses.length,3);
+ assert.deepEqual(d.expenses.map(r=>r.day),['2026-01-05','2026-02-05','2026-03-05']);
+ assert.deepEqual(d.recurring[0].issued,['2026-01','2026-02','2026-03']);
+ const revision=d.revision;
+ d=autoIssueRecurring(d,'2026-03-20');
+ assert.equal(d.expenses.length,3);
+ assert.equal(d.revision,revision);
+});
+test('Récurrences automatiques : lignes manuelles et périodes clôturées protégées',()=>{
+ let d=change(start(),'saveRecurring',{...template,day:5,start:'2026-01'});
+ d=change(d,'save',{day:'2026-01-05',label:'Téléphone',category:'Téléphonie',amount:'24',vat:'4',payment:'Prélèvement',notes:''});
+ d=change(d,'clearBank',{kind:'expense',id:1,day:'2026-01-05'});
+ d=change(d,'closeBank',{end:'2026-01-31',balance:'976'});
+ d=autoIssueRecurring(d,'2026-02-20');
+ assert.equal(d.expenses.length,2);
+ assert.deepEqual(d.recurring[0].issued,['2026-01','2026-02']);
+ assert.equal(d.expenses[1].day,'2026-02-05');
+});
