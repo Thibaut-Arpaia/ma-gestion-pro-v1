@@ -163,12 +163,17 @@ function validatePreferences(d){
 function validateBackground(value){
  if(value===null||value===undefined)return null;
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Fond d’écran invalide.');
- const {name,type,size,data}=value;
+ const {name,type,size,data,path}=value;
  if(typeof name!=='string'||!name.trim()||name.length>180)throw Error('Nom du fond d’écran invalide.');
  if(!['image/jpeg','image/png','image/webp'].includes(type))throw Error('Format de fond d’écran non pris en charge.');
  if(!Number.isSafeInteger(size)||size<=0||size>3000000)throw Error('Fond d’écran trop volumineux : 3 Mo maximum.');
- if(typeof data!=='string'||!data||data.length>4500000||!/^[A-Za-z0-9+/]+={0,2}$/.test(data))throw Error('Données du fond d’écran invalides.');
- return {name:name.trim(),type,size,data};
+ if(data!==undefined&&(typeof data!=='string'||!data||data.length>4500000||!/^[A-Za-z0-9+/]+={0,2}$/.test(data)))throw Error('Données du fond d’écran invalides.');
+ if(path!==undefined&&(typeof path!=='string'||!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(path)))throw Error('Chemin du fond d’écran invalide.');
+ if(data===undefined&&path===undefined)throw Error('Données du fond d’écran invalides.');
+ const clean={name:name.trim(),type,size};
+ if(data!==undefined)clean.data=data;
+ if(path!==undefined)clean.path=path;
+ return clean;
 }
 function validateRecurring(d){
  if(d.recurring===undefined)d.recurring=[];

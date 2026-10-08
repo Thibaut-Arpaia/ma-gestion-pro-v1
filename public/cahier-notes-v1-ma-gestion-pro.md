@@ -397,3 +397,9 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Retour PC : le menu gauche ne doit plus afficher le monogramme barres + MGP. Retour au texte complet "Ma Gestion Pro" en style rose néon/calligraphié.
 - Retour PC : l'application d'un fond personnalisé inférieur à 3 Mo pouvait rester bloquée visuellement si le fichier de comptes complet devenait trop lourd avec les justificatifs et les sauvegardes. Limite du JSON portée à 35 Mo et message "Application du fond en cours..." ajouté pour éviter un sablier sans retour.
 - Règle conservée : le fond personnalisable ne modifie pas les calculs, les opérations, les modules, les textes, les chiffres ni les icônes de l'interface.
+
+## Correctif V4 fond d'écran — reprise après échec PC — 08/10/2026
+- Thibaut confirme que l'échec d'application du fond se produit bien sur le ZIP V4 correctif déjà intégré à GitHub : la pastille en bas à droite affiche V4.
+- Conclusion : la limite JSON relevée ne suffit pas. Nouvelle règle technique : ne plus stocker l'image du fond directement dans `ma-gestion-pro.json`.
+- Correction : à l'application d'un fond, enregistrer l'image dans un fichier séparé du dossier de comptes, sous `fonds/`, et ne garder dans le JSON que le nom, le type, la taille et le chemin. À l'ouverture du dossier, relire ce fichier pour appliquer le fond.
+- L'export "copie complète" reste autonome : il réinjecte les données du fond dans le JSON exporté. Une restauration d'une ancienne copie contenant un fond intégré le réécrit en fichier séparé.

@@ -24,6 +24,7 @@ test('V4 : le fond d’écran est personnalisable sans modifier l’interface',a
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const app=await readFile(path.join(root,'app.js'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
+ const storage=await readFile(path.join(root,'storage.mjs'),'utf8');
  assert.match(html,/Fond d’écran/);
  assert.match(html,/id="background-file" type="file" accept="image\/jpeg,image\/png,image\/webp"/);
  assert.match(html,/id="reset-background">Revenir au fond V3/);
@@ -33,6 +34,9 @@ test('V4 : le fond d’écran est personnalisable sans modifier l’interface',a
  assert.match(app,/call\('saveBackground'/);
  assert.match(app,/call\('resetBackground'/);
  assert.match(app,/--dashboard-bg/);
+ assert.match(storage,/writeBackgroundAsset/);
+ assert.match(storage,/backgroundFolder='fonds'/);
+ assert.match(storage,/hydrateBackground/);
  assert.match(css,/var\(--dashboard-bg,url\('\.\/assets\/dashboard-background-v3\.png'\)\) center top\/cover fixed no-repeat/);
 });
 
@@ -46,7 +50,7 @@ test('Réglages : une copie complète JSON peut être téléchargée',async()=>{
  assert.match(app,/call\('exportData'\)/);
  assert.match(app,/new Blob\(\[data\.json\],\{type:'application\/json'\}\)/);
  assert.match(storage,/if\(action==='exportData'\)/);
- assert.match(storage,/JSON\.stringify\(data,null,2\)/);
+ assert.match(storage,/JSON\.stringify\(await hydrateBackground\(data\),null,2\)/);
 });
 
 test('Documentation V4 : les nouveautés et le ZIP complet restent cadrés',async()=>{
