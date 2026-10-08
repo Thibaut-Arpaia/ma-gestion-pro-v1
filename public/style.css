@@ -215,15 +215,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 
   width:20px;
   transform:translateY(-50%);
   color:#d8e8f8;
-  font:20px/1 'Segoe UI Symbol','Segoe UI',sans-serif;
+  font:21px/1 'Segoe UI Emoji','Segoe UI Symbol','Segoe UI',sans-serif;
   text-align:center;
+  filter:drop-shadow(0 4px 8px #020b1445);
  }
- nav button[data-view='dashboard']::before{content:'⌂';color:#ff6ab2}
- nav button[data-view='expenses']::before{content:'▤';color:#f0a923}
- nav button[data-view='revenues']::before{content:'▥';color:#35d3ad}
+ nav button[data-view='dashboard']::before{content:'🏠';color:#ff6ab2}
+ nav button[data-view='expenses']::before{content:'📄';color:#f0a923}
+ nav button[data-view='revenues']::before{content:'🪙';color:#35d3ad}
  nav button[data-view='bank']::before{content:'⇄';color:#32c6ff}
- nav button[data-view='calculator']::before{content:'%';color:#b667ff}
- nav button[data-view='reports']::before{content:'▰';color:#35d3ad}
+ nav button[data-view='calculator']::before{content:'🧮';color:#b667ff}
+ nav button[data-view='reports']::before{content:'📊';color:#35d3ad}
  nav button[data-view='settings']::before{content:'⚙';color:#dce9f7}
  nav button.active{
   border-left-color:var(--pink);
@@ -392,6 +393,7 @@ body::before{
  letter-spacing:-.08em;
  text-shadow:0 1px #ffffff90;
  box-shadow:inset 0 1px #fff,0 12px 26px color-mix(in srgb,var(--accent) 22%,transparent);
+ font-family:'Segoe UI Emoji','Segoe UI Symbol','Segoe UI',sans-serif;
 }
 .panel{
  background:linear-gradient(145deg,#f7fcffbf,#e9f4fbb5);
@@ -511,14 +513,15 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   gap:20px;
  }
  .logo{
-  min-height:104px;
-  padding-left:9px;
-  color:#ff6ab2;
-  text-shadow:0 0 8px #ff74bd,0 0 19px #ff2d9a,0 0 38px #ff2d887d;
-  font-size:31px;
-  line-height:.98;
+  min-height:116px;
+  padding:2px 4px 0 10px;
+  color:#ff7ac3;
+  text-shadow:0 0 7px #ff8fd0,0 0 18px #ff2d9a,0 0 42px #ff2d8890;
+  font-size:32px;
+  line-height:.94;
+  justify-content:center;
  }
- .logo::before{content:'Ma\A Gestion\A Pro';white-space:pre-line;color:#ff6ab2}
+ .logo::before{content:'Ma\A Gestion\A Pro';white-space:pre-line;color:#ff7ac3}
 }
 
 @media(max-width:999px){

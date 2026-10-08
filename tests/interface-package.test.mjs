@@ -112,9 +112,9 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/\.hero\{\s*display:none;\s*\}/);
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
  assert.match(css,/\.version-note\{[\s\S]*position:fixed;[\s\S]*right:24px;[\s\S]*bottom:16px;/);
- assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:31px;/);
- assert.match(css,/\.logo\{[\s\S]*min-height:104px;/);
- assert.match(css,/text-shadow:0 0 8px #ff74bd,0 0 19px #ff2d9a,0 0 38px #ff2d887d/);
+ assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:32px;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:116px;/);
+ assert.match(css,/text-shadow:0 0 7px #ff8fd0,0 0 18px #ff2d9a,0 0 42px #ff2d8890/);
  assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
  assert.match(css,/nav\{width:100%;gap:6px;overflow:hidden\}/);
  assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:clip;/);
@@ -124,7 +124,9 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/\.metrics strong\{[\s\S]*color:var\(--metric-color,#071735\)/);
  assert.match(css,/\.metrics article:nth-child\(2\)\{--metric-color:#13a979;--accent:#13a979\}/);
  assert.match(css,/\.metrics article:nth-child\(4\)\{--metric-color:#f0a923;--accent:#f0a923\}/);
- assert.match(css,/nav button\[data-view='revenues'\]::before\{content:'▥';color:#35d3ad\}/);
+ assert.match(css,/nav button\[data-view='dashboard'\]::before\{content:'🏠';color:#ff6ab2\}/);
+ assert.match(css,/nav button\[data-view='revenues'\]::before\{content:'🪙';color:#35d3ad\}/);
+ assert.match(css,/nav button\[data-view='calculator'\]::before\{content:'🧮';color:#b667ff\}/);
  assert.match(css,/\.month:nth-child\(3n\+2\) \.bar\{background:linear-gradient\(to top,#8b5cf6,#f05bcb\)\}/);
  assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffbf,#e9f4fbb5\)/);
  assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbffc2/);
@@ -133,6 +135,7 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
 test('Dashboard V3 : le compteur tickets reste aligné avec les autres indicateurs',async()=>{
  const app=await readFile(path.join(root,'app.js'),'utf8');
  assert.match(app,/receiptIcon\.className='metric-icon'/);
+ assert.match(app,/receiptIcon\.textContent='🧾'/);
  assert.match(app,/Tickets à retrouver/);
  assert.match(app,/Justificatifs manquants à traiter/);
  assert.match(app,/receiptMetric\.append\(receiptIcon,receiptMetricBody\)/);
