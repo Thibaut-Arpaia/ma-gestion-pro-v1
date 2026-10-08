@@ -327,6 +327,7 @@ body::before{
 .section-top{
  margin-top:32px;
  margin-bottom:18px;
+ justify-content:flex-end;
 }
 .version-note{
  position:fixed;
@@ -496,9 +497,14 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   gap:20px;
  }
  .logo{
-  min-height:76px;
-  padding-left:12px;
+  min-height:104px;
+  padding-left:7px;
+  color:#ff4fa3;
+  text-shadow:0 0 8px #ff4fa3,0 0 19px #ff2d88,0 0 34px #ff2d8875;
+  font-size:30px;
+  line-height:1.02;
  }
+ .logo::before{content:'Ma\A Gestion\A Pro';white-space:pre-line;color:#ff4fa3}
 }
 
 @media(max-width:999px){
@@ -540,7 +546,7 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
 }
 .bank-table th,.bank-table td{border-bottom-color:#c5d7e5}
 
-.dashboard-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.dashboard-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
 .secondary-action{
  background:linear-gradient(105deg,#35d3ad,#22ad87);
  border-color:#35d3ad;

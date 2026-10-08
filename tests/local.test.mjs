@@ -25,6 +25,8 @@ test('Préférences : fond d’écran personnalisé validé et réinitialisable'
  d=change(d,'saveBackground',{name:'terrasse.webp',type:'image/webp',size:1000,data:'QUJD'});
  assert.equal(d.preferences.background.name,'terrasse.webp');
  assert.equal(d.expenses.length,0);
+ d=change(d,'saveBackground',{name:'sunset-motel.png',type:'image/png',size:2623000,data:'A'.repeat(3500000)});
+ assert.equal(d.preferences.background.name,'sunset-motel.png');
  d=change(d,'resetBackground');
  assert.equal(d.preferences.background,null);
  assert.throws(()=>change(d,'saveBackground',{name:'fond.gif',type:'image/gif',size:1000,data:'QUJD'}),/Format de fond/);

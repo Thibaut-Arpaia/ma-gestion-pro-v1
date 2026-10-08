@@ -391,3 +391,9 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Ajout d'une note `V4.md` pour documenter le périmètre exact : aucun changement de calcul, de TVA/URSSAF, de bilan, de rapprochement ou de calculatrice.
 - Réglages & sauvegardes reçoit un léger repère visuel par panneau pour mieux distinguer point de départ, sécurité des comptes et fond d'écran.
 - Décision de méthode conservée : ne générer le ZIP qu'après la passe complète de tests et seulement quand le lot V4 est prêt à livrer.
+
+## Correctif V4 après test PC — 08/10/2026
+- Retour PC : les boutons rapides "Ajouter une dépense" et "Ajouter une recette" se positionnaient trop à gauche après actualisation. Ils doivent rester alignés à droite de la zone Dashboard.
+- Retour PC : le menu gauche ne doit plus afficher le monogramme barres + MGP. Retour au texte complet "Ma Gestion Pro" en style rose néon/calligraphié.
+- Retour PC : l'application d'un fond personnalisé inférieur à 3 Mo pouvait rester bloquée visuellement si le fichier de comptes complet devenait trop lourd avec les justificatifs et les sauvegardes. Limite du JSON portée à 35 Mo et message "Application du fond en cours..." ajouté pour éviter un sablier sans retour.
+- Règle conservée : le fond personnalisable ne modifie pas les calculs, les opérations, les modules, les textes, les chiffres ni les icônes de l'interface.

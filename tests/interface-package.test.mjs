@@ -83,7 +83,7 @@ test('Interface V3 : les libellés du menu restent dans le cadre',async()=>{
  const css=await readFile(path.join(root,'style.css'),'utf8');
  assert.match(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
  assert.match(css,/\.logo\{[\s\S]*justify-content:flex-start;[\s\S]*text-align:left;/);
- assert.match(css,/content:'▌▌▌\\A MGP'/);
+ assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
  assert.match(css,/nav button\{[\s\S]*white-space:normal;[\s\S]*line-height:1\.15;/);
  assert.match(css,/nav button\[data-view='settings'\]\{min-height:58px\}/);
 });
@@ -95,6 +95,7 @@ test('Dashboard V3 : les actions rapides ouvrent dépenses et recettes',async()=
  assert.match(html,/data-view="expenses">＋ Ajouter une dépense/);
  assert.match(html,/data-view="revenues">＋ Ajouter une recette/);
  assert.match(css,/\.dashboard-actions/);
+ assert.match(css,/\.dashboard-actions\{[\s\S]*justify-content:flex-end;[\s\S]*margin-left:auto/);
  assert.match(css,/\.secondary-action/);
 });
 
@@ -105,10 +106,10 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/\.hero\{\s*display:none;\s*\}/);
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
  assert.match(css,/\.version-note\{[\s\S]*position:fixed;[\s\S]*right:24px;[\s\S]*bottom:16px;/);
- assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:25px;/);
- assert.match(css,/\.logo\{[\s\S]*min-height:76px;/);
- assert.match(css,/text-shadow:0 0 10px #ff639d88,0 0 26px #ff639d55/);
- assert.match(css,/content:'▌▌▌\\A MGP'/);
+ assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:30px;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:104px;/);
+ assert.match(css,/text-shadow:0 0 8px #ff4fa3,0 0 19px #ff2d88,0 0 34px #ff2d8875/);
+ assert.match(css,/content:'Ma\\A Gestion\\A Pro'/);
  assert.match(css,/nav\{width:100%;gap:6px;overflow:hidden\}/);
  assert.match(css,/nav button\{[\s\S]*width:100%;[\s\S]*text-overflow:clip;/);
  assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f6fbffe8,#e7f2fae4\)/);
