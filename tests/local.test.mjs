@@ -20,6 +20,17 @@ test('Dépenses : montants, historique, références et annulation',()=>{
  assert.throws(()=>validate({...d,next:99}));
  assert.throws(()=>validate({...d,expenses:[...d.expenses,d.expenses[0]]}));
 });
+test('Préférences : fond d’écran personnalisé validé et réinitialisable',()=>{
+ let d=change(empty(),'setup',setup);
+ d=change(d,'saveBackground',{name:'terrasse.webp',type:'image/webp',size:1000,data:'QUJD'});
+ assert.equal(d.preferences.background.name,'terrasse.webp');
+ assert.equal(d.expenses.length,0);
+ d=change(d,'resetBackground');
+ assert.equal(d.preferences.background,null);
+ assert.throws(()=>change(d,'saveBackground',{name:'fond.gif',type:'image/gif',size:1000,data:'QUJD'}),/Format de fond/);
+ assert.throws(()=>change(d,'saveBackground',{name:'fond.png',type:'image/png',size:3000001,data:'QUJD'}),/3 Mo/);
+ assert.equal(validate({...d,preferences:undefined}).preferences.background,null);
+});
 test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans faux succès',async()=>{
  const root=await fs.mkdtemp(path.join(os.tmpdir(),'mgp-test-'));let fail=false,selection=null,queue=Promise.resolve();
  function fileHandle(file){return {getFile:async()=>{let buffer;try{buffer=await fs.readFile(file);}catch(e){if(e.code==='ENOENT')e.name='NotFoundError';throw e;}return {size:buffer.length,text:async()=>buffer.toString()};},createWritable:async()=>{let content;return {write:async v=>{if(fail)throw Error('Disque indisponible');content=v;},close:async()=>{await fs.writeFile(file+'.tmp',content);await fs.rename(file+'.tmp',file);},abort:async()=>{}};}};}
@@ -28,15 +39,19 @@ test('Écriture disque, réouverture, sauvegarde, restauration et erreur sans fa
  Object.defineProperty(globalThis,'navigator',{configurable:true,value:{locks:{request:(_name,fn)=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;}}}});
  try{
  const receipt={name:'ticket.pdf',type:'application/pdf',size:9,data:Buffer.from('%PDF-1.4\n').toString('base64')};
- const a=await import('../storage.mjs?test1');await a.run('connect');await a.run('setup',setup);await a.run('save',{...expense,receipt});await a.run('saveRecurring',{label:'Abonnement disque',category:'Abonnements',amount:'24',vat:'4',payment:'Prélèvement',day:15,start:'2026-09'});
+ const background={name:'fond-test.webp',type:'image/webp',size:1200,data:Buffer.from('fond-test').toString('base64')};
+ const a=await import('../storage.mjs?test1');await a.run('connect');await a.run('setup',setup);await a.run('save',{...expense,receipt});await a.run('saveRecurring',{label:'Abonnement disque',category:'Abonnements',amount:'24',vat:'4',payment:'Prélèvement',day:15,start:'2026-09'});await a.run('saveBackground',background);
  const b=await import('../storage.mjs?test2');assert.equal((await b.run('state')).connected,false);const reopened=await b.run('connect');assert.equal(reopened.expenses[0].cents,4250);assert.deepEqual(reopened.expenses[0].receipt,receipt);assert.equal(reopened.recurring[0].label,'Abonnement disque');
+ assert.deepEqual(reopened.preferences.background,background);
  const saved=await b.run('backup');selection=path.join(root,'sauvegardes',saved.file);
  await Promise.all([b.run('save',expense),b.run('save',expense)]);assert.equal((await b.run('state')).next,103);
- await b.run('restore');assert.equal((await b.run('state')).recurring[0].label,'Abonnement disque');assert.equal((await b.run('state')).expenses.length,1);assert.deepEqual((await b.run('state')).expenses[0].receipt,receipt);
+ await b.run('restore');assert.equal((await b.run('state')).recurring[0].label,'Abonnement disque');assert.equal((await b.run('state')).expenses.length,1);assert.deepEqual((await b.run('state')).expenses[0].receipt,receipt);assert.deepEqual((await b.run('state')).preferences.background,background);
+ const exported=await b.run('exportData'),exportData=JSON.parse(exported.json);assert.match(exported.name,/^ma-gestion-pro-export-\d{4}-\d{2}-\d{2}\.json$/);assert.equal(exportData.expenses.length,1);assert.deepEqual(exportData.preferences.background,background);assert.deepEqual(exportData.expenses[0].receipt,receipt);
+ await b.run('resetBackground');assert.equal((await b.run('state')).preferences.background,null);
  const prior=await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8');fail=true;await assert.rejects(b.run('save',expense),/Disque indisponible/);fail=false;
  assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
  selection=path.join(root,'invalid.json');await fs.writeFile(selection,'{}');await assert.rejects(b.run('restore'));assert.equal(await fs.readFile(path.join(root,'ma-gestion-pro.json'),'utf8'),prior);
- await b.run('remove',1);assert.equal((await b.run('state')).expenses.length,0);assert.equal((await b.run('state')).next,100);
+ await b.run('remove',1);assert.equal((await b.run('state')).expenses.length,0);assert.equal((await b.run('state')).next,100);const deletedExport=JSON.parse((await b.run('exportData')).json);assert.equal(deletedExport.expenses.length,1);assert.equal(deletedExport.expenses[0].cancelled,true);
  await b.run('save',{...expense,receipt});await b.run('clearBank',{kind:'expense',id:2,day:'2026-09-15'});await b.run('closeBank',{end:'2026-09-30',balance:'957.50'});
  const c=await import('../storage.mjs?test3');await c.run('connect');assert.equal((await c.run('state')).bankClosures.length,1);assert.equal((await c.run('state')).expenses[0].clearedDay,'2026-09-15');
  const closedBackup=await c.run('backup');selection=path.join(root,'sauvegardes',closedBackup.file);await c.run('reopenBank',{});assert.equal((await c.run('state')).bankClosures.length,0);await c.run('restore');assert.equal((await c.run('state')).bankClosures.length,1);assert.deepEqual((await c.run('state')).expenses[0].receipt,receipt);

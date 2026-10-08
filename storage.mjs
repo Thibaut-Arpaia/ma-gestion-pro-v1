@@ -18,6 +18,11 @@ export async function run(action,p){
  if(!window.confirm('Remplacer les comptes de ce dossier par cette sauvegarde ? Une copie de l’état actuel sera conservée.'))return {cancelled:true};
  return locked(async()=>{const old=await read();await snapshot(old);const restored={...candidate,revision:Math.max(candidate.revision,old.revision)+1};await write(await directory.getFileHandle(filename,{create:true}),restored);return state(restored);});
  }
+ if(action==='exportData'){
+ if(!directory)throw Error('Choisis d’abord ton dossier.');
+ const data=validate(await read()),name=`ma-gestion-pro-export-${new Date().toISOString().slice(0,10)}.json`;
+ return {name,json:JSON.stringify(data,null,2)};
+ }
  return locked(async()=>{const before=await read();if(action==='backup')return {...state(before),file:await snapshot(before)};const after=change(before,action,p);await snapshot(before);await write(await directory.getFileHandle(filename,{create:true}),after);return state(after);});
 }
 window.gestion={call:async(action,p)=>{try{return {ok:true,data:await run(action,p)};}catch(e){return {ok:false,error:e.name==='AbortError'?'Sélection annulée.':e.name==='NotAllowedError'?'Accès refusé : rouvre ton dossier pour autoriser l’enregistrement.':e.message||'Enregistrement impossible.'};}}};

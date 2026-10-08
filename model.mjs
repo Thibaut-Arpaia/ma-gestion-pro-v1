@@ -47,7 +47,7 @@ export function financeSummary(d,year,asOf=`${year}-12-31`){
  return {revenueHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,reserved:vatNet+urssafReserve};
 }
 export function date(s){const d=new Date(`${s}T12:00:00Z`);return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
-export function empty(){return {format:'ma-gestion-pro',version:1,revision:0,setup:null,next:null,expenses:[],revenues:[]};}
+export function empty(){return {format:'ma-gestion-pro',version:1,revision:0,setup:null,next:null,expenses:[],revenues:[],preferences:{background:null}};}
 const integer=n=>Number.isSafeInteger(n)&&Math.abs(n)<=1e11;
 function renumber(d){
  if(!d.setup)return d;
@@ -58,6 +58,7 @@ function renumber(d){
 }
 export function validate(d){
  if(!d||d.format!=='ma-gestion-pro'||d.version!==1||!Number.isSafeInteger(d.revision)||d.revision<0||!Array.isArray(d.expenses))throw Error('Fichier Ma Gestion Pro invalide ou version incompatible.');
+ validatePreferences(d);
  validateRecurring(d);
  validateReceipts(d.expenses);
  validateBank(d);
@@ -104,6 +105,8 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  d.recurring.find(r=>r.id===Number(p.id)).issued.push(p.month);
  }
  else if(['clearBank','closeBank','reopenBank'].includes(action))bankChange(d,action,p,money);
+ else if(action==='saveBackground')d.preferences.background=validateBackground(p);
+ else if(action==='resetBackground')d.preferences.background=null;
  else throw Error('Action inconnue.');
  if(action==='save'){const row=p.id?d.expenses.find(r=>r.id===p.id):d.expenses.at(-1);updateReceipt(row,p);}
  if(action==='save'||action==='saveRevenue'){const collection=action==='save'?'expenses':'revenues';if(p.id){const old=source[collection].find(r=>r.id===p.id),row=d[collection].find(r=>r.id===p.id);if(old&&(old.cents!==row.cents||old.day!==row.day))delete row.clearedDay;}}
@@ -152,6 +155,21 @@ function fiscalPeriod(revenues,expenses){
 }
 
 function validMonth(value){return typeof value==='string'&&/^\d{4}-\d{2}$/.test(value)&&date(value+'-01');}
+function validatePreferences(d){
+ if(d.preferences===undefined)d.preferences={background:null};
+ if(!d.preferences||typeof d.preferences!=='object'||Array.isArray(d.preferences))throw Error('Préférences invalides.');
+ d.preferences={background:validateBackground(d.preferences.background)};
+}
+function validateBackground(value){
+ if(value===null||value===undefined)return null;
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Fond d’écran invalide.');
+ const {name,type,size,data}=value;
+ if(typeof name!=='string'||!name.trim()||name.length>180)throw Error('Nom du fond d’écran invalide.');
+ if(!['image/jpeg','image/png','image/webp'].includes(type))throw Error('Format de fond d’écran non pris en charge.');
+ if(!Number.isSafeInteger(size)||size<=0||size>3000000)throw Error('Fond d’écran trop volumineux : 3 Mo maximum.');
+ if(typeof data!=='string'||!data||data.length>4500000||!/^[A-Za-z0-9+/]+={0,2}$/.test(data))throw Error('Données du fond d’écran invalides.');
+ return {name:name.trim(),type,size,data};
+}
 function validateRecurring(d){
  if(d.recurring===undefined)d.recurring=[];
  if(!Array.isArray(d.recurring))throw Error('Récurrences invalides.');const ids=new Set();

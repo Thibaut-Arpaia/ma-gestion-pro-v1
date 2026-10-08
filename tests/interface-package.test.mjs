@@ -8,15 +8,60 @@ const root=path.resolve(import.meta.dirname,'..');
 test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/V3 web · visuel immobilier clair · bilan fiscal \+ contrôles/);
- assert.match(html,/class="dashboard-title">Ma Gestion Pro<\/h1>/);
+ assert.match(html,/V4 web · fond personnalisable · copie complète/);
  assert.match(html,/class="muted version-note"/);
+ assert.doesNotMatch(html,/class="dashboard-title"/);
+ assert.doesNotMatch(html,/class="scope"/);
  assert.match(css,/dashboard-background-v3\.png/);
  assert.match(css,/dashboard-visual-v2\.png/);
  assert.match(css,/V3 — direction validee/);
  await access(path.join(root,'assets','dashboard-visual-v2.png'));
  await access(path.join(root,'assets','dashboard-background-v3.png'));
  await access(path.join(root,'assets','crowd-applause-and-cheering-237756-5s.mp3'));
+});
+
+test('V4 : le fond d’écran est personnalisable sans modifier l’interface',async()=>{
+ const html=await readFile(path.join(root,'index.html'),'utf8');
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(html,/Fond d’écran/);
+ assert.match(html,/id="background-file" type="file" accept="image\/jpeg,image\/png,image\/webp"/);
+ assert.match(html,/id="reset-background">Revenir au fond V3/);
+ assert.match(app,/function selectedBackground\(\)/);
+ assert.match(app,/Format accepté : JPG, PNG ou WEBP/);
+ assert.match(app,/Fond d’écran trop volumineux : 3 Mo maximum/);
+ assert.match(app,/call\('saveBackground'/);
+ assert.match(app,/call\('resetBackground'/);
+ assert.match(app,/--dashboard-bg/);
+ assert.match(css,/var\(--dashboard-bg,url\('\.\/assets\/dashboard-background-v3\.png'\)\) center top\/cover fixed no-repeat/);
+});
+
+test('Réglages : une copie complète JSON peut être téléchargée',async()=>{
+ const html=await readFile(path.join(root,'index.html'),'utf8');
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const storage=await readFile(path.join(root,'storage.mjs'),'utf8');
+ assert.match(html,/id="export-data">Télécharger une copie complète/);
+ assert.match(html,/Le téléchargement complet crée un JSON de secours immédiat/);
+ assert.match(app,/async function exportData\(\)/);
+ assert.match(app,/call\('exportData'\)/);
+ assert.match(app,/new Blob\(\[data\.json\],\{type:'application\/json'\}\)/);
+ assert.match(storage,/if\(action==='exportData'\)/);
+ assert.match(storage,/JSON\.stringify\(data,null,2\)/);
+});
+
+test('Documentation V4 : les nouveautés et le ZIP complet restent cadrés',async()=>{
+ const readme=await readFile(path.join(root,'README.md'),'utf8');
+ const v4=await readFile(path.join(root,'V4.md'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(readme,/Ma Gestion Pro — V4 web pour GitHub Pages/);
+ assert.match(readme,/Personnalisation du fond d’écran/);
+ assert.match(readme,/Téléchargement d’une copie complète JSON/);
+ assert.match(readme,/ZIP complet GitHub/);
+ assert.match(v4,/Formats acceptés : JPG, PNG et WEBP/);
+ assert.match(v4,/Téléchargement d’une copie complète JSON de secours/);
+ assert.match(v4,/Aucun changement des calculs/);
+ assert.match(css,/\.settings-layout>\.panel::before/);
+ assert.match(css,/#export-data/);
 });
 
 test('Interface V2.2 : les sept onglets restent dans l’ordre validé',async()=>{
@@ -55,11 +100,10 @@ test('Dashboard V3 : les actions rapides ouvrent dépenses et recettes',async()=
 
 test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()=>{
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(css,/url\('\.\/assets\/dashboard-background-v3\.png'\) center top\/cover fixed no-repeat/);
+ assert.match(css,/var\(--dashboard-bg,url\('\.\/assets\/dashboard-background-v3\.png'\)\) center top\/cover fixed no-repeat/);
  assert.match(css,/background:linear-gradient\(180deg,#f6fbff00 0,#d8e9f314 60%,#cfe2ee28 100%\)/);
  assert.match(css,/\.hero\{\s*display:none;\s*\}/);
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
- assert.match(css,/\.dashboard-title\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:58px;/);
  assert.match(css,/\.version-note\{[\s\S]*position:fixed;[\s\S]*right:24px;[\s\S]*bottom:16px;/);
  assert.match(css,/\.logo\{[\s\S]*font-family:'Segoe Script','Brush Script MT','Trebuchet MS',cursive;[\s\S]*font-size:25px;/);
  assert.match(css,/\.logo\{[\s\S]*min-height:76px;/);
@@ -70,6 +114,9 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/\.page\{[\s\S]*background:linear-gradient\(145deg,#f6fbffe8,#e7f2fae4\)/);
  assert.match(css,/\.connection-bar\{\s*display:none;\s*\}/);
  assert.match(css,/\.metrics article\{[\s\S]*background:linear-gradient\(145deg,#f8fcffd4,#eaf4fbcf\)/);
+ assert.match(css,/\.metrics strong\{[\s\S]*color:var\(--metric-color,#071735\)/);
+ assert.match(css,/\.metrics article:nth-child\(2\)\{--metric-color:#e94f80\}/);
+ assert.match(css,/\.metrics article:nth-child\(4\)\{--metric-color:#1ea77d\}/);
  assert.match(css,/\.panel\{[\s\S]*background:linear-gradient\(145deg,#f7fcffd8,#e9f4fbd3\)/);
  assert.match(css,/\.bank-table-wrap\{[\s\S]*background:#f5fbfff0/);
 });

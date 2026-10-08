@@ -1,6 +1,6 @@
-# Ma Gestion Pro — V3 web pour GitHub Pages
+# Ma Gestion Pro — V4 web pour GitHub Pages
 
-Version V3 préparée le 7 octobre 2026. Validation PC à effectuer après publication.
+Version V4 préparée le 8 octobre 2026. Validation PC à effectuer après publication.
 
 ## Ce qui est inclus
 
@@ -12,12 +12,16 @@ Version V3 préparée le 7 octobre 2026. Validation PC à effectuer après publi
 - Bilan mensuel/annuel avec détails, provisions fiscales de la période et enveloppes cumulées.
 - Récurrences mensuelles et virement personnel sans TVA ni provision fiscale.
 - Contrôles Dashboard : doublons, tickets manquants et pointages en attente jusqu’à aujourd’hui.
+- Personnalisation du fond d’écran depuis Réglages & sauvegardes, sans modifier l’interface.
+- Téléchargement d’une copie complète JSON de secours.
 
 Les comptes restent dans le dossier local choisi par l’utilisateur. Aucun fichier comptable réel ne doit être ajouté au dépôt GitHub.
 
 ## Utilisation
 
 À chaque session, cliquer sur **Ouvrir mon dossier** pour retrouver les comptes. L’accès demande un navigateur compatible File System Access API et une page HTTPS. Les copies de sécurité sont placées dans le sous-dossier `sauvegardes`.
+
+Le bouton **Télécharger une copie complète** exporte un JSON de secours immédiat. Cette copie contient aussi les tickets, récurrences, préférences, fond personnalisé et opérations supprimées conservées.
 
 La synchronisation pCloud est gérée séparément par l’utilisateur. La version mobile et la synchronisation bidirectionnelle ne sont pas encore validées comme module complet.
 
