@@ -523,14 +523,15 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   position:relative;
   min-height:132px;
   padding:8px 8px 22px 8px;
-  color:#ff63bd;
-  text-shadow:0 0 4px #fff2fb,0 0 11px #ff65c9,0 0 24px #ff279f,0 0 52px #ff2d8890;
-  font-size:35px;
-  line-height:.9;
+  background:url('./assets/sidebar-logo-neon.png') center 8px/178px auto no-repeat!important;
+  color:transparent;
+  text-shadow:none;
+  font-size:0;
+  line-height:0;
   justify-content:center;
-  letter-spacing:-.055em;
+  letter-spacing:0;
  }
- .logo::before{content:'Ma Gestion\A Pro';white-space:pre-line;color:#ff63bd;transform:rotate(-4deg)}
+ .logo::before{content:''}
  .logo::after{
   content:'';
   position:absolute;
