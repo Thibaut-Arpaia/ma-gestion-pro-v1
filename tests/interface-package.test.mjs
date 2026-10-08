@@ -91,7 +91,7 @@ test('Interface V3 : les libellés du menu restent dans le cadre',async()=>{
  const css=await readFile(path.join(root,'style.css'),'utf8');
  assert.match(html,/<button data-view="settings">Réglages & sauvegardes<\/button>/);
  assert.match(css,/\.logo\{[\s\S]*justify-content:flex-start;[\s\S]*text-align:left;/);
- assert.match(css,/background:url\('\.\/assets\/sidebar-logo-neon\.png'\) center 8px\/178px auto no-repeat!important/);
+ assert.match(css,/background:url\('\.\/assets\/sidebar-logo-neon\.png'\) center 4px\/142px auto no-repeat!important/);
  assert.match(css,/nav button\{[\s\S]*white-space:normal;[\s\S]*line-height:1\.15;/);
  assert.match(css,/nav button\[data-view='settings'\]\{min-height:58px\}/);
 });
@@ -115,8 +115,8 @@ test('Interface V3 : le fond unique reste fixe et les panneaux lisibles',async()
  assert.match(css,/\.topbar\{[\s\S]*overflow:hidden;/);
  assert.match(css,/\.version-note\{[\s\S]*position:fixed;[\s\S]*right:24px;[\s\S]*bottom:16px;/);
  assert.match(css,/radial-gradient\(circle at 36% 10%,#ff5fb43a 0,#ff5fb414 22%,transparent 48%\)/);
- assert.match(css,/\.logo\{[\s\S]*background:url\('\.\/assets\/sidebar-logo-neon\.png'\) center 8px\/178px auto no-repeat!important;[\s\S]*font-size:0;/);
- assert.match(css,/\.logo\{[\s\S]*min-height:132px;/);
+ assert.match(css,/\.logo\{[\s\S]*background:url\('\.\/assets\/sidebar-logo-neon\.png'\) center 4px\/142px auto no-repeat!important;[\s\S]*font-size:0;/);
+ assert.match(css,/\.logo\{[\s\S]*min-height:162px;/);
  assert.match(css,/\.logo\{[\s\S]*text-shadow:none;/);
  assert.match(css,/\.logo::before\{content:''\}/);
  assert.match(css,/\.logo::after\{[\s\S]*background:linear-gradient\(90deg,transparent,#ffffff22 10%,#ff69be72 50%,#51d7ff38 86%,transparent\)/);
