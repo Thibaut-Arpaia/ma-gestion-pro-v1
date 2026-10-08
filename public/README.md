@@ -1,6 +1,6 @@
-# Ma Gestion Pro — V4 web pour GitHub Pages
+# Ma Gestion Pro — V4.1 web pour GitHub Pages
 
-Version V4 préparée le 8 octobre 2026. Fond personnalisable validé sur PC.
+Version V4.1 préparée le 8 octobre 2026. Fond personnalisable validé sur PC, aide au pointage CSV ajoutée.
 
 ## Ce qui est inclus
 
@@ -8,6 +8,7 @@ Version V4 préparée le 8 octobre 2026. Fond personnalisable validé sur PC.
 - Actions rapides Dashboard : ajouter une dépense ou une recette.
 - Dépenses, recettes, justificatifs, corbeille de tickets et alertes de doublons.
 - Rapprochement bancaire manuel avec pointage, clôture, réouverture, confettis et son.
+- Aide au pointage depuis CSV bancaire : seules les opérations déjà saisies avec une correspondance unique sont pointées, aucune ligne comptable n’est créée automatiquement.
 - Calculatrice de commission agence TTC avec barème progressif.
 - Bilan mensuel/annuel avec détails, provisions fiscales de la période et enveloppes cumulées.
 - Récurrences mensuelles et virement personnel sans TVA ni provision fiscale.

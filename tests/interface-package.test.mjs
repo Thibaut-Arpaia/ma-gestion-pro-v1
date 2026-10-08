@@ -8,7 +8,7 @@ const root=path.resolve(import.meta.dirname,'..');
 test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/V4 web · fond personnalisable · copie complète/);
+ assert.match(html,/V4\.1 web · import CSV bancaire · copie complète/);
  assert.match(html,/class="muted version-note"/);
  assert.doesNotMatch(html,/class="dashboard-title"/);
  assert.doesNotMatch(html,/class="scope"/);
@@ -59,7 +59,7 @@ test('Documentation V4 : les nouveautés et le ZIP complet restent cadrés',asyn
  const readme=await readFile(path.join(root,'README.md'),'utf8');
  const v4=await readFile(path.join(root,'V4.md'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(readme,/Ma Gestion Pro — V4 web pour GitHub Pages/);
+ assert.match(readme,/Ma Gestion Pro — V4\.1 web pour GitHub Pages/);
  assert.match(readme,/Personnalisation du fond d’écran/);
  assert.match(readme,/Téléchargement d’une copie complète JSON/);
  assert.match(readme,/ZIP complet GitHub/);
@@ -175,6 +175,21 @@ test('Contrôles : le Dashboard signale aussi les pointages en attente',async()=
  assert.match(app,/Ouvrir le rapprochement/);
  assert.match(app,/ni pointage en attente détecté/);
  assert.match(css,/\.control-badge/);
+});
+
+test('Rapprochement : aide au pointage CSV bancaire sans création comptable',async()=>{
+ const ui=await readFile(path.join(root,'reconciliation-ui.mjs'),'utf8');
+ const bank=await readFile(path.join(root,'reconciliation.mjs'),'utf8');
+ const model=await readFile(path.join(root,'model.mjs'),'utf8');
+ const readme=await readFile(path.join(root,'README.md'),'utf8');
+ assert.match(ui,/Pointage depuis CSV bancaire/);
+ assert.match(ui,/id="bank-csv" type="file" accept="\.csv,text\/csv,text\/plain"/);
+ assert.match(ui,/autoClearMatches\(d,importedEntries\)/);
+ assert.match(ui,/mutate\('autoClearBank'/);
+ assert.match(bank,/export function parseBankCsv/);
+ assert.match(bank,/export function autoClearMatches/);
+ assert.match(model,/\['clearBank','autoClearBank','closeBank','reopenBank'\]/);
+ assert.match(readme,/Aide au pointage depuis CSV bancaire/);
 });
 
 test('Livraison : le workflow et la documentation verrouillent le ZIP complet GitHub',async()=>{

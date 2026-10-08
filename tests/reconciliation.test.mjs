@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {empty,change,validate,financeSummary,pendingBankControls} from '../model.mjs';
-import {bankSummary,bankRows} from '../reconciliation.mjs';
+import {autoClearMatches,bankSummary,bankRows,parseBankCsv} from '../reconciliation.mjs';
 const expense={day:'2026-10-02',amount:'120',vat:'20',label:'Restaurant',category:'Restaurant',payment:'Carte pro',notes:''};
 const revenue={day:'2026-10-01',amount:'1200',vat:'200',label:'Recette',category:'Autre recette',notes:''};
 function base(){let d=change(empty(),'setup',{day:'2026-10-01',balance:'1000',next:'1'});d=change(d,'save',expense);return change(d,'saveRevenue',revenue);}
@@ -35,4 +35,28 @@ test('Rapprochement : historique, périodes suivantes, solde négatif et validat
  d=change(d,'closeBank',{end:'2026-11-30',balance:'-920'});assert.equal(d.bankClosures.length,2);d=change(d,'reopenBank',{});assert.equal(d.bankClosures.length,1);
  assert.throws(()=>bankSummary(d,'2026-09-30'));assert.throws(()=>bankSummary(d,'2026-02-30'));const invalid=structuredClone(d);invalid.bankClosures[0].bankBalance++;assert.throws(()=>validate(invalid));
  const badDate=structuredClone(d);badDate.expenses[0].clearedDay='2026-02-30';assert.throws(()=>validate(badDate));
+});
+
+test('Import bancaire CSV : pointage automatique seulement sur correspondance unique',()=>{
+ let d=base();
+ const entries=parseBankCsv('Date;Libellé;Débit;Crédit\n02/10/2026;Restaurant;120,00;\n03/10/2026;Recette;;1200,00\n');
+ assert.deepEqual(entries.map(e=>e.cents),[-12000,120000]);
+ assert.deepEqual(autoClearMatches(d,entries).map(m=>[m.kind,m.id,m.clearedDay]),[['expense',1,'2026-10-02'],['revenue',1,'2026-10-03']]);
+ d=change(d,'autoClearBank',{entries});
+ assert.equal(d.expenses[0].clearedDay,'2026-10-02');
+ assert.equal(d.revenues[0].clearedDay,'2026-10-03');
+ assert.deepEqual(financeSummary(d,2026),financeSummary(base(),2026));
+ assert.equal(bankSummary(d,'2026-10-31').pending,0);
+});
+
+test('Import bancaire CSV : ambiguïtés et périodes clôturées restent protégées',()=>{
+ let d=base();
+ d=change(d,'save',{...expense,label:'Restaurant',amount:'120'});
+ assert.equal(autoClearMatches(d,[{day:'2026-10-02',cents:-12000,label:'Restaurant'}]).length,0);
+ d=change(d,'clearBank',{kind:'expense',id:1,day:'2026-10-02'});
+ d=change(d,'clearBank',{kind:'revenue',id:1,day:'2026-10-01'});
+ d=change(d,'clearBank',{kind:'expense',id:2,day:'2026-10-02'});
+ d=change(d,'closeBank',{end:'2026-10-31',balance:'1960'});
+ assert.throws(()=>change(d,'autoClearBank',{entries:[{day:'2026-10-02',cents:-12000,label:'Restaurant'}]}),/correspondance/);
+ assert.throws(()=>parseBankCsv('Libellé;Montant\nRestaurant;-120,00'),/Colonnes CSV/);
 });

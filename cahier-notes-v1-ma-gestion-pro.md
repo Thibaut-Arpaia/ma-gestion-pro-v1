@@ -413,3 +413,10 @@ Alerte avant enregistrement pour même date, montant et libellé normalisé (cas
 - Ajustement suivant validé sur simulation : remettre un panneau arrière sur les onglets internes, mais plus transparent que les modules et ajusté autour de la zone utile pour éviter les grands débords vides.
 - Direction visuelle complémentaire validée : reprendre l'esprit du mockup généré par erreur mais apprécié, avec logo "Ma Gestion Pro" rose néon plus élégant, chiffres davantage colorés par indicateur, icônes plus dynamiques dans les cartes et le menu, et graphiques plus vivants. Cette passe reste strictement visuelle.
 - Validation suivante : les panneaux arrière ajustés sont validés et ne doivent plus être retouchés. À corriger seulement : fidélité des icônes au mockup apprécié, avec maison pour Dashboard, document pour Dépenses, pièces empilées pour Recettes, doubles flèches pour Rapprochement, calculatrice, colonnes pour Bilan et roue pour Réglages & sauvegardes. Le logo néon "Ma Gestion Pro" doit garder la calligraphie rose lumineuse et être mieux centré.
+
+## Lot fonctionnel suivant — import CSV bancaire prudent — 08/10/2026
+- Priorité donnée aux fonctions utiles pour travailler les comptes, le visuel étant mis de côté autour de 90 % de validation.
+- Ajout dans Rapprochement d'une aide au pointage depuis CSV bancaire.
+- Règle de sécurité : le CSV ne crée aucune dépense et aucune recette. Il pointe seulement les opérations déjà saisies si la date et le montant donnent une correspondance unique.
+- Les lignes ambiguës, non reconnues, hors fenêtre de date ou déjà clôturées restent à pointer manuellement.
+- Aucun changement des calculs TVA/URSSAF, argent disponible, bilan, récurrences, justificatifs, sauvegardes ou fond d'écran.

@@ -104,7 +104,7 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  const id=d.expenses.reduce((max,r)=>Math.max(max,r.id),0)+1;d.expenses.push({...planned,id,ref:null,historical:false,cancelled:false,notes:'Échéance mensuelle générée',recurringId:Number(p.id),recurringMonth:p.month,receiptExempt:provisionKind(planned.category)==='personal'});
  d.recurring.find(r=>r.id===Number(p.id)).issued.push(p.month);
  }
- else if(['clearBank','closeBank','reopenBank'].includes(action))bankChange(d,action,p,money);
+ else if(['clearBank','autoClearBank','closeBank','reopenBank'].includes(action))bankChange(d,action,p,money);
  else if(action==='saveBackground')d.preferences.background=validateBackground(p);
  else if(action==='resetBackground')d.preferences.background=null;
  else throw Error('Action inconnue.');

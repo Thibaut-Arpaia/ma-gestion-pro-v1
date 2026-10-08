@@ -1,4 +1,6 @@
 const validDay=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(Date.parse(s+'T12:00:00Z'))&&new Date(s+'T12:00:00Z').toISOString().slice(0,10)===s;
+const parseCents=value=>{const s=String(value||'').replace(/\u2212/g,'-').replace(/[\s\u00a0\u202f€"]/g,'').replace(',','.');if(!s)return null;if(!/^-?\d+(\.\d{1,2})?$/.test(s))return null;return Math.round(Number(s)*100);};
+const addDays=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
 export function bankRows(d){return [...(d.expenses||[]).filter(r=>!r.cancelled&&!r.historical).map(r=>({...r,kind:'expense',signed:-r.cents})),...(d.revenues||[]).filter(r=>!r.cancelled).map(r=>({...r,kind:'revenue',signed:r.cents}))].sort((a,b)=>a.day.localeCompare(b.day)||a.kind.localeCompare(b.kind)||a.id-b.id);}
 export function bankSummary(d,end){
  if(!validDay(end)||!d.setup||end<d.setup.day)throw Error('La date de rapprochement doit être postérieure ou égale au point de départ.');
@@ -24,6 +26,46 @@ export function bankChange(d,action,p,money){
  (d.bankClosures??=[]).push({end:p.end,bankBalance,expected:summary.expected,closedAt:new Date().toISOString(),fingerprint:fingerprint(d,p.end)});
  }else if(action==='reopenBank'){
  if(!d.bankClosures?.length)throw Error('Aucune clôture à rouvrir.');d.bankClosures.pop();
+ }else if(action==='autoClearBank'){
+ const matches=autoClearMatches(d,p?.entries||[]);
+ if(!matches.length)throw Error('Aucune correspondance bancaire unique à pointer.');
+ for(const match of matches){const rows=match.kind==='expense'?d.expenses:d.revenues;const row=rows.find(r=>r.id===match.id);row.clearedDay=match.clearedDay;}
  }
 }
 export function protectClosures(before,after){for(const c of before.bankClosures||[])if(after.bankClosures?.some(x=>x.end===c.end)&&c.fingerprint!==fingerprint(after,c.end))throw Error('Cette modification touche une période clôturée. Rouvre la clôture dans Rapprochement.');}
+
+export function autoClearMatches(d,entries){
+ if(!Array.isArray(entries))throw Error('Import bancaire invalide.');
+ const lockedEnd=d.bankClosures?.at(-1)?.end||'';
+ const candidates=bankRows(d).filter(r=>!r.clearedDay&&r.day>lockedEnd);
+ const used=new Set(),matches=[];
+ for(const entry of entries){
+  if(!entry||!validDay(entry.day)||!Number.isSafeInteger(entry.cents)||entry.cents===0)throw Error('Une ligne du CSV bancaire est invalide.');
+  const possible=candidates.filter(r=>!used.has(r.kind+':'+r.id)&&r.signed===entry.cents&&r.day<=entry.day&&entry.day<=addDays(r.day,10));
+  if(possible.length===1){const r=possible[0];used.add(r.kind+':'+r.id);matches.push({kind:r.kind,id:r.id,clearedDay:entry.day,label:r.label,cents:r.signed});}
+ }
+ return matches;
+}
+
+export function parseBankCsv(text){
+ const lines=String(text||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+ if(lines.length<2)throw Error('CSV bancaire vide ou incomplet.');
+ const sep=[';','\t',','].sort((a,b)=>lines[0].split(b).length-lines[0].split(a).length)[0];
+ const cells=line=>line.split(sep).map(cell=>cell.trim().replace(/^"|"$/g,''));
+ const headers=cells(lines[0]).map(h=>h.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
+ const find=(...names)=>headers.findIndex(h=>names.some(name=>h.includes(name)));
+ const dateIndex=find('date'),labelIndex=find('libelle','operation','description'),amountIndex=find('montant','amount'),debitIndex=find('debit'),creditIndex=find('credit');
+ if(dateIndex<0||(amountIndex<0&&(debitIndex<0||creditIndex<0)))throw Error('Colonnes CSV attendues : date et montant, ou date, débit et crédit.');
+ const entries=[];
+ for(const line of lines.slice(1)){
+  const row=cells(line),rawDate=row[dateIndex];let day=null;
+  const iso=rawDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/),fr=rawDate?.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(iso)day=rawDate;else if(fr)day=`${fr[3]}-${fr[2].padStart(2,'0')}-${fr[1].padStart(2,'0')}`;
+  if(!validDay(day))continue;
+  let cents=amountIndex>=0?parseCents(row[amountIndex]):null;
+  if(cents===null){const debit=parseCents(row[debitIndex])||0,credit=parseCents(row[creditIndex])||0;cents=credit?Math.abs(credit):-Math.abs(debit);}
+  if(cents)entries.push({day,cents,label:labelIndex>=0?row[labelIndex]:''});
+ }
+ if(!entries.length)throw Error('Aucune ligne bancaire exploitable dans ce CSV.');
+ return entries;
+}
