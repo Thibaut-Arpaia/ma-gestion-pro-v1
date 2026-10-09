@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {empty,change,validate,calcCommission,commissionSummary,reverseCommissionBase,financeSummary} from '../model.mjs';
+import {empty,change,validate,calcCommission,commissionSummary,reverseCommissionBase,financeSummary,dashboardSummary} from '../model.mjs';
 const near=(actual,expected,delta=1)=>assert.ok(Math.abs(actual-expected)<=delta,`${actual} attendu proche de ${expected}`);
 const setup={day:'2026-09-01',balance:'1 000,00',next:'100'};
 const expense={day:'2026-09-15',amount:'42,50',vat:'7,08',label:'Test',category:'Restaurant',payment:'Carte pro',notes:''};
@@ -228,6 +228,15 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.vatCollected,20000);
  assert.equal(f.vatNet,18000);
  assert.equal(f.urssafGenerated,25750);
+});
+test('Dashboard : chiffre d’affaires limité aux commissions immobilières',()=>{
+ let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
+ d=change(d,'saveRevenue',{day:'2026-01-10',amount:'14000',vat:'0',label:'Commission A',category:'Commission immobilière',notes:''});
+ d=change(d,'saveRevenue',{day:'2026-02-10',amount:'1200',vat:'200',label:'Remboursement',category:'Autre recette',notes:''});
+ d=change(d,'save',{day:'2026-02-11',amount:'120',vat:'20',label:'Restaurant',category:'Restaurant',payment:'Carte pro',notes:''});
+ const s=dashboardSummary(d,'2026-12-31');
+ assert.equal(s.revenueTotal,1400000);
+ assert.equal(s.balance,1608000);
 });
 test('Audit calculs : arrondis commission aux paliers validés',()=>{
  const exact=[

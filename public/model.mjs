@@ -204,7 +204,7 @@ export function dashboardSummary(d,asOf){
  const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day<=asOf);
  const annualExpenses=expenses.filter(r=>r.day.slice(0,4)===String(year));
  const annualRevenues=revenues.filter(r=>r.day.slice(0,4)===String(year));
- const total=annualExpenses.reduce((s,r)=>s+r.cents,0),revenueTotal=annualRevenues.reduce((s,r)=>s+r.cents,0);
+ const total=annualExpenses.reduce((s,r)=>s+r.cents,0),revenueTotal=annualRevenues.filter(r=>r.category==='Commission immobilière').reduce((s,r)=>s+r.cents,0);
  const finance=financeSummary(d,year,asOf);
  const balance=d.setup?d.setup.balance+revenues.reduce((s,r)=>s+r.cents,0)-expenses.filter(r=>!r.historical).reduce((s,r)=>s+r.cents,0):null;
  return {annualExpenses,annualRevenues,total,revenueTotal,cashflow:revenueTotal-total,finance,balance,freeCash:balance===null?null:balance-finance.reserved};

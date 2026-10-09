@@ -178,7 +178,20 @@ test('Bilan : les blocs fiscaux restent lisibles à l’impression',async()=>{
  assert.match(app,/Enveloppes cumulées/);
  assert.match(app,/Estimations de pilotage basées sur les saisies de la période/);
  assert.match(app,/Cumul annuel jusqu’au dernier jour consulté/);
+ assert.doesNotMatch(app,/Trésorerie générée/);
  assert.match(css,/body\.printing-report #period-report \.report-fiscal\{background:white!important;border-color:#999!important\}/);
+});
+
+test('Dashboard : indicateurs renommés et trésorerie masquée',async()=>{
+ const html=await readFile(path.join(root,'index.html'),'utf8');
+ const model=await readFile(path.join(root,'model.mjs'),'utf8');
+ assert.match(html,/Compte courant/);
+ assert.match(html,/Chiffre d’affaires/);
+ assert.match(html,/Commissions immobilières/);
+ assert.doesNotMatch(html,/Solde suivi/);
+ assert.doesNotMatch(html,/Recettes de l’année/);
+ assert.doesNotMatch(html,/Trésorerie générée/);
+ assert.match(model,/annualRevenues\.filter\(r=>r\.category==='Commission immobilière'\)\.reduce/);
 });
 
 test('TVA / URSSAF : onglet dédié et paiements sécurisés',async()=>{
