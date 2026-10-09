@@ -523,13 +523,24 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
   position:relative;
   min-height:132px;
   padding:8px 8px 22px 8px;
-  background:url('./assets/sidebar-logo-neon.png') center 8px/178px auto no-repeat!important;
+  background:none!important;
   color:transparent;
   text-shadow:none;
   font-size:0;
   line-height:0;
+  display:flex;
+  align-items:flex-start;
   justify-content:center;
   letter-spacing:0;
+ }
+ .logo img{
+  display:block;
+  width:174px;
+  max-width:100%;
+  height:auto;
+  object-fit:contain;
+  pointer-events:none;
+  user-select:none;
  }
  .logo::before{content:''}
  .logo::after{
