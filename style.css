@@ -521,9 +521,9 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  }
  .logo{
   position:relative;
-  min-height:162px;
+  min-height:132px;
   padding:8px 8px 22px 8px;
-  background:url('./assets/sidebar-logo-neon.png') center 4px/142px auto no-repeat!important;
+  background:url('./assets/sidebar-logo-neon.png') center 8px/178px auto no-repeat!important;
   color:transparent;
   text-shadow:none;
   font-size:0;
