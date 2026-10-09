@@ -144,17 +144,19 @@ test('Dashboard : TVA nette, réserve URSSAF et argent réellement libre',()=>{
  assert.equal(f.vatCollected,233333);
  assert.equal(f.vatDeductible,2000);
  assert.equal(f.vatNet,231333);
- assert.equal(f.urssafGenerated,300417);
- assert.equal(f.urssafReserve,300417);
- assert.equal(f.reserved,531750);
+ assert.equal(f.urssafGenerated,298667);
+ assert.equal(f.urssafReserve,298667);
+ assert.equal(f.taxBase,868000);
+ assert.equal(f.taxReserve,86800);
+ assert.equal(f.reserved,616800);
  d=change(d,'save',{...expense,day:'2026-09-22',amount:'1000',vat:'0',category:'TVA reversée'});
  d=change(d,'save',{...expense,day:'2026-09-23',amount:'500',vat:'0',category:'Cotisations URSSAF'});
  f=financeSummary(d,2026);
  assert.equal(f.vatPaid,100000);
  assert.equal(f.urssafPaid,50000);
  assert.equal(f.vatNet,131333);
- assert.equal(f.urssafReserve,250417);
- assert.equal(f.reserved,381750);
+ assert.equal(f.urssafReserve,248667);
+ assert.equal(f.reserved,466800);
 });
 test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=>{
  let d=change(empty(),'setup',setup);
@@ -166,7 +168,7 @@ test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=
  assert.equal(f.vatPaid,100000);
  assert.equal(f.urssafPaid,50000);
  assert.equal(f.vatNet,131333);
- assert.equal(f.urssafReserve,250417);
+ assert.equal(f.urssafReserve,248667);
  d=change(d,'save',{...expense,day:'2026-09-24',amount:'100',vat:'0',category:'TVA payée'});
  d=change(d,'save',{...expense,day:'2026-09-25',amount:'50',vat:'0',category:'Paiement URSSAF'});
  f=financeSummary(d,2026);
@@ -180,13 +182,14 @@ test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=
  d=change(d,'save',{...expense,day:'2026-09-28',amount:'2000',vat:'333.33',category:'virement personnel'});
  f=financeSummary(d,2026);
  assert.equal(f.vatDeductible,2000);
- assert.equal(f.reserved,361750);
+ assert.equal(f.reserved,446800);
 });
 test('Module TVA/URSSAF : paiements guidés sans TVA ni justificatif obligatoire',()=>{
  let d=change(empty(),'setup',setup);
  d=change(d,'saveRevenue',{...revenue,day:'2026-09-20',amount:'14000',vat:'0'});
  d=change(d,'save',{...expense,day:'2026-09-22',amount:'1000',vat:'0',label:'Paiement TVA',category:'TVA reversée',payment:'Virement',receiptExempt:true});
  d=change(d,'save',{...expense,day:'2026-09-23',amount:'500',vat:'0',label:'Paiement URSSAF',category:'Cotisations URSSAF',payment:'Virement',receiptExempt:true});
+ d=change(d,'save',{...expense,day:'2026-09-24',amount:'100',vat:'0',label:'Paiement impôts',category:'Impôt',payment:'Virement',receiptExempt:true});
  assert.equal(d.expenses.at(-2).vat_cents,0);
  assert.equal(d.expenses.at(-2).receiptExempt,true);
  assert.equal(d.expenses.at(-1).vat_cents,0);
@@ -194,8 +197,10 @@ test('Module TVA/URSSAF : paiements guidés sans TVA ni justificatif obligatoire
  const f=financeSummary(d,2026);
  assert.equal(f.vatPaid,100000);
  assert.equal(f.urssafPaid,50000);
+ assert.equal(f.taxPaid,10000);
  assert.equal(f.vatNet,133333);
- assert.equal(f.urssafReserve,250417);
+ assert.equal(f.urssafReserve,248667);
+ assert.equal(f.taxReserve,76800);
 });
 test('Audit calculs : recettes modifiées/supprimées et provisions ignorées correctement',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
@@ -207,8 +212,9 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.vatCollected,253333);
  assert.equal(f.vatDeductible,2000);
  assert.equal(f.vatNet,251333);
- assert.equal(f.urssafGenerated,326167);
- assert.equal(f.reserved,577500);
+ assert.equal(f.urssafGenerated,324267);
+ assert.equal(f.taxReserve,86800);
+ assert.equal(f.reserved,662400);
  d=change(d,'saveRevenue',{day:'2026-01-10',amount:'28000',vat:'0',label:'Commission A modifiée',category:'Commission immobilière',notes:'',id:1});
  let s=commissionSummary(d.revenues,2026);
  assert.equal(s.baseHt,3333333);
@@ -218,7 +224,8 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.revenueHt,2433333);
  assert.equal(f.vatCollected,486667);
  assert.equal(f.vatNet,484667);
- assert.equal(f.urssafGenerated,626583);
+ assert.equal(f.urssafGenerated,622933);
+ assert.equal(f.taxReserve,173600);
  d=change(d,'removeRevenue',1);
  s=commissionSummary(d.revenues,2026);
  assert.equal(s.count,0);
@@ -227,7 +234,8 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.revenueHt,100000);
  assert.equal(f.vatCollected,20000);
  assert.equal(f.vatNet,18000);
- assert.equal(f.urssafGenerated,25750);
+ assert.equal(f.urssafGenerated,25600);
+ assert.equal(f.taxReserve,0);
 });
 test('Dashboard : chiffre d’affaires limité aux commissions immobilières',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
@@ -237,6 +245,19 @@ test('Dashboard : chiffre d’affaires limité aux commissions immobilières',()
  const s=dashboardSummary(d,'2026-12-31');
  assert.equal(s.revenueTotal,1400000);
  assert.equal(s.balance,1608000);
+});
+test('Point de départ : CA initial et cumul PP HT restent découplés du compte courant',()=>{
+ let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1',initialRevenue:'9800',initialPpBaseHt:'11666.67'});
+ d=change(d,'saveRevenue',{day:'2026-02-01',amount:'14000',vat:'0',label:'Commission A',category:'Commission immobilière',notes:''});
+ const dashboard=dashboardSummary(d,'2026-12-31');
+ assert.equal(dashboard.revenueTotal,2380000);
+ assert.equal(dashboard.balance,1500000);
+ const summary=commissionSummary(d.revenues,2026,d.setup.initialPpBaseHt);
+ assert.equal(summary.initialBaseHt,1166667);
+ assert.equal(summary.baseHt,2833334);
+ const old=validate({format:'ma-gestion-pro',version:1,revision:0,setup:{day:'2026-01-01',balance:100000,first:1},next:1,expenses:[],revenues:[]});
+ assert.equal(old.setup.initialRevenueCents,0);
+ assert.equal(old.setup.initialPpBaseHt,0);
 });
 test('Audit calculs : arrondis commission aux paliers validés',()=>{
  const exact=[

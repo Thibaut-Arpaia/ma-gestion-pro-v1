@@ -7,14 +7,14 @@ const revenue={day:'2026-09-20',label:'Commission',category:'Commission immobili
 function base(){return change(change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:1}),'saveRevenue',revenue);}
 function indicators(d,at=day){const {balance,freeCash,finance}=dashboardSummary(d,at);return {balance,freeCash,finance};}
 test('Aujourd’hui : échéances futures TVA, URSSAF et virement sans effet sur les indicateurs',()=>{
- let d=base();const before=indicators(d);assert.equal(before.balance,1500000);assert.equal(before.finance.vatNet,233333);assert.equal(before.finance.urssafReserve,300417);assert.equal(before.freeCash,966250);
+ let d=base();const before=indicators(d);assert.equal(before.balance,1500000);assert.equal(before.finance.vatNet,233333);assert.equal(before.finance.urssafReserve,298667);assert.equal(before.finance.taxReserve,86800);assert.equal(before.freeCash,881200);
  for(const [category,amount,vat] of [['Abonnement','24','4'],['TVA reversée','1000','0'],['Cotisations URSSAF','500','0'],['Virement personnel','2000','0']]){
  d=change(d,'saveRecurring',{...expense,category,amount,vat,day:15,start:'2026-10'});
  d=change(d,'issueRecurring',{id:d.recurring.at(-1).id,month:'2026-10'});
  assert.deepEqual(indicators(d),before);
  }
  assert.equal(periodReport(d,2026,10).outgoings,352400);
- const due=indicators(d,'2026-10-15');assert.equal(due.balance,1147600);assert.equal(due.finance.vatNet,132933);assert.equal(due.finance.urssafReserve,250417);assert.equal(due.freeCash,764250);
+ const due=indicators(d,'2026-10-15');assert.equal(due.balance,1147600);assert.equal(due.finance.vatNet,132933);assert.equal(due.finance.urssafReserve,248667);assert.equal(due.finance.taxReserve,86800);assert.equal(due.freeCash,679200);
  assert.deepEqual(indicators(JSON.parse(JSON.stringify(d))),before);
 });
 test('Aujourd’hui : recettes futures et année suivante exclues, date du jour incluse',()=>{

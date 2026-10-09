@@ -187,25 +187,48 @@ test('Dashboard : indicateurs renommés et trésorerie masquée',async()=>{
  const model=await readFile(path.join(root,'model.mjs'),'utf8');
  assert.match(html,/Compte courant/);
  assert.match(html,/Chiffre d’affaires/);
- assert.match(html,/Commissions immobilières/);
+ assert.match(html,/CA initial \+ commissions immobilières/);
+ assert.match(html,/Impôts à réserver/);
+ assert.match(html,/Compte courant - TVA\/URSSAF\/impôts/);
  assert.doesNotMatch(html,/Solde suivi/);
  assert.doesNotMatch(html,/Recettes de l’année/);
  assert.doesNotMatch(html,/Trésorerie générée/);
- assert.match(model,/annualRevenues\.filter\(r=>r\.category==='Commission immobilière'\)\.reduce/);
+ assert.match(model,/initialRevenue\+annualRevenues\.filter\(r=>r\.category==='Commission immobilière'\)\.reduce/);
 });
 
-test('TVA / URSSAF : onglet dédié et paiements sécurisés',async()=>{
+test('TVA / URSSAF / Impôts : onglet dédié et paiements sécurisés',async()=>{
  const app=await readFile(path.join(root,'app.js'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
  assert.match(app,/dataset\.view='fiscal'/);
- assert.match(app,/TVA \/ URSSAF/);
+ assert.match(app,/TVA \/ URSSAF \/ Impôts/);
+ assert.match(app,/tax-payment-form/);
+ assert.match(app,/Impôts à réserver aujourd’hui/);
  assert.match(app,/financeSummary\(state,year,today\(\)\)/);
- assert.match(app,/category:vat\?'TVA reversée':'Cotisations URSSAF'/);
+ assert.match(app,/category:'Impôt'/);
  assert.match(app,/payment:'Virement',vat:'0'/);
  assert.match(app,/receiptExempt:true/);
  assert.match(app,/id="fiscal-payment-history"/);
+ assert.doesNotMatch(app,/À quoi ça sert/);
  assert.match(css,/\.fiscal-kpis/);
+ assert.match(css,/\.tax-card \.reserve-bar i/);
+ assert.match(css,/\.fiscal-grid\{[\s\S]*gap:20px/);
  assert.match(css,/nav button\[data-view='fiscal'\]::before/);
+});
+
+test('V4.4 : point de départ initial et TVA multiple sont câblés sans nouveau modèle profond',async()=>{
+ const html=await readFile(path.join(root,'index.html'),'utf8');
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const model=await readFile(path.join(root,'model.mjs'),'utf8');
+ assert.match(html,/name="initialRevenue"/);
+ assert.match(html,/CA encaissé initial/);
+ assert.match(html,/name="initialPpBaseHt"/);
+ assert.match(html,/Cumul barème PP HT initial/);
+ assert.match(html,/id="add-vat-line">\+ Ajouter une TVA/);
+ assert.match(html,/id="vat-total"/);
+ assert.match(app,/function totalVatCents\(\)/);
+ assert.match(app,/data\.vat=\(totalVatCents\(\)\/100\)\.toFixed\(2\)/);
+ assert.match(model,/initialRevenueCents:money\(p\.initialRevenue\|\|'0'\)/);
+ assert.match(model,/initialPpBaseHt:money\(p\.initialPpBaseHt\|\|'0'\)/);
 });
 
 test('Contrôles : le Dashboard signale aussi les pointages en attente',async()=>{

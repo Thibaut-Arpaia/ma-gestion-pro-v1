@@ -1,6 +1,8 @@
 import {validateReceipts,updateReceipt} from './receipts.mjs';
 import {validateBank,bankChange,protectClosures} from './reconciliation.mjs';
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
+export const URSSAF_RATE=.256;
+export const INCOME_TAX_RATE=.10;
 export function money(v){if(!['string','number'].includes(typeof v))throw Error('Montant invalide.');const s=String(v).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(s))throw Error('Deux décimales au maximum.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||Math.abs(n)>1e11)throw Error('Montant hors limite.');return n;}
 export const commissionBrackets=[{to:3900000,rate:.70},{to:5900000,rate:.75},{to:7500000,rate:.80},{to:9000000,rate:.85},{to:Infinity,rate:.90}];
 export function reverseCommissionBase(advisorHt,previousHt=0){
@@ -15,17 +17,18 @@ export function calcCommission(input){
  if(agencyTtc<=0)throw Error('Commission agence invalide.');
  if(!Number.isFinite(share)||share<=0||share>100)throw Error('Part personnelle invalide.');
  if(previousHt<0)throw Error('Cumul HT invalide.');
- const vatRate=0.20,urssafRate=0.256,agencyHt=Math.round(agencyTtc/(1+vatRate)),personalBaseHt=Math.round(agencyHt*share/100);
+ const vatRate=0.20,agencyHt=Math.round(agencyTtc/(1+vatRate)),personalBaseHt=Math.round(agencyHt*share/100);
  let remaining=personalBaseHt,position=previousHt,advisorHt=0;
  for(const b of commissionBrackets){if(remaining<=0)break;const room=b.to===Infinity?remaining:Math.max(0,b.to-position);const slice=Math.min(remaining,room);advisorHt+=Math.round(slice*b.rate);remaining-=slice;position+=slice;}
- const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*urssafRate),net=advisorHt-urssaf;
+ const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*URSSAF_RATE),net=advisorHt-urssaf;
  return {agencyTtc,agencyHt,share,previousHt,personalBaseHt,nextHt:previousHt+personalBaseHt,advisorHt,advisorVat,advisorTtc,urssaf,net};
 }
-export function commissionSummary(revenues,year){
+export function commissionSummary(revenues,year,initialBaseHt=0){
+ if(!integer(initialBaseHt)||initialBaseHt<0)throw Error('Cumul HT initial invalide.');
  const rows=(revenues||[]).filter(r=>!r.cancelled&&r.category==='Commission immobilière'&&(!year||r.day.slice(0,4)===String(year))).sort((a,b)=>a.day.localeCompare(b.day)||a.id-b.id);
- let baseHt=0,advisorTtc=0,advisorHt=0,vat=0;
+ let baseHt=initialBaseHt,advisorTtc=0,advisorHt=0,vat=0;
  for(const r of rows){const ht=Math.round(r.cents/1.2),calc=reverseCommissionBase(ht,baseHt);baseHt=calc.nextHt;advisorTtc+=r.cents;advisorHt+=ht;vat+=r.cents-ht;}
- return {count:rows.length,baseHt,advisorTtc,advisorHt,vat};
+ return {count:rows.length,baseHt,initialBaseHt,advisorTtc,advisorHt,vat};
 }
 export function normCategory(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
 export function provisionKind(category){
@@ -40,11 +43,12 @@ function revenueParts(r){if(r.category==='Commission immobilière'){const ht=Mat
 export function financeSummary(d,year,asOf=`${year}-12-31`){
  if(!date(asOf))throw Error("Date de calcul invalide.");
  const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)&&r.day<=asOf),expenses=(d.expenses||[]).filter(r=>!r.cancelled&&r.day.slice(0,4)===String(year)&&r.day<=asOf);
- let revenueHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0;
- for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;}
- for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
- const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*.2575),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
- return {revenueHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,reserved:vatNet+urssafReserve};
+ let revenueHt=0,commissionAdvisorHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0,taxPaid=0;
+ for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;if(r.category==='Commission immobilière')commissionAdvisorHt+=p.ht;}
+ for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;if(provision==='tax')taxPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
+ const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*URSSAF_RATE),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
+ const taxBase=Math.max(0,commissionAdvisorHt-Math.round(commissionAdvisorHt*URSSAF_RATE)),taxGenerated=Math.round(taxBase*INCOME_TAX_RATE),taxReserve=Math.max(0,taxGenerated-taxPaid);
+ return {revenueHt,commissionAdvisorHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,taxBase,taxGenerated,taxPaid,taxReserve,reserved:vatNet+urssafReserve+taxReserve};
 }
 export function date(s){const d=new Date(`${s}T12:00:00Z`);return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
 export function empty(){return {format:'ma-gestion-pro',version:1,revision:0,setup:null,next:null,expenses:[],revenues:[],preferences:{background:null}};}
@@ -65,6 +69,9 @@ export function validate(d){
  if(!Array.isArray(d.revenues))d.revenues=[];
  if(d.setup===null){if(d.expenses.length||d.revenues.length||d.next!==null)throw Error('Point de départ absent.');return d;}
  if(!d.setup||!date(d.setup.day)||!integer(d.setup.balance)||!integer(d.setup.first)||d.setup.first<1||!integer(d.next)||d.next<d.setup.first)throw Error('Paramètres invalides.');
+ if(d.setup.initialRevenueCents===undefined)d.setup.initialRevenueCents=0;
+ if(d.setup.initialPpBaseHt===undefined)d.setup.initialPpBaseHt=0;
+ if(!integer(d.setup.initialRevenueCents)||d.setup.initialRevenueCents<0||!integer(d.setup.initialPpBaseHt)||d.setup.initialPpBaseHt<0)throw Error('Paramètres initiaux invalides.');
  const refs=new Set(),ids=new Set();for(const r of d.expenses){
  if(!r||!Number.isSafeInteger(r.id)||r.id<1||ids.has(r.id)||!date(r.day)||typeof r.label!=='string'||!r.label.trim()||r.label.length>200||typeof r.category!=='string'||!r.category.trim()||r.category.length>80||!integer(r.cents)||r.cents<=0||!integer(r.vat_cents)||r.vat_cents<0||r.vat_cents>r.cents||!payments.includes(r.payment)||typeof r.notes!=='string'||r.notes.length>1000||typeof r.historical!=='boolean'||typeof r.cancelled!=='boolean'||r.historical!==(r.day<d.setup.day))throw Error('Une dépense du fichier est invalide.');
  ids.add(r.id);if(r.ref!==null){if(!integer(r.ref)||r.ref<1||(r.historical?r.ref>=d.setup.first:r.ref<d.setup.first))throw Error('Numérotation incohérente.');if(!r.cancelled){if(refs.has(r.ref)||r.ref>=d.next)throw Error('Numérotation incohérente.');refs.add(r.ref);}}else if(!r.historical&&!r.cancelled)throw Error('Référence manquante.');
@@ -74,7 +81,7 @@ export function validate(d){
  }return d;
 }
 export function change(source,action,p){const d=structuredClone(validate(source));
- if(action==='setup'){if(d.setup)throw Error('Le point de départ est déjà enregistré.');const n=Number(p.next);if(!date(p.day)||!integer(n)||n<1)throw Error('Date ou premier numéro invalide.');d.setup={day:p.day,balance:money(p.balance),first:n};d.next=n;}
+ if(action==='setup'){if(d.setup)throw Error('Le point de départ est déjà enregistré.');const n=Number(p.next);if(!date(p.day)||!integer(n)||n<1)throw Error('Date ou premier numéro invalide.');d.setup={day:p.day,balance:money(p.balance),first:n,initialRevenueCents:money(p.initialRevenue||'0'),initialPpBaseHt:money(p.initialPpBaseHt||'0')};d.next=n;}
  else if(action==='save'){
  if(!d.setup)throw Error('Enregistre ton point de départ dans Réglages.');
  const v={day:p.day,label:String(p.label||'').trim(),category:String(p.category||'').trim(),cents:money(p.amount),vat_cents:money(p.vat||'0'),payment:p.payment,notes:String(p.notes||'').trim()};v.historical=v.day<d.setup.day;
@@ -147,11 +154,12 @@ export function periodReport(d,year,month=0){
 function lastDay(year,month){return `${year}-${String(month).padStart(2,'0')}-${String(new Date(Date.UTC(year,month,0)).getUTCDate()).padStart(2,'0')}`;}
 
 function fiscalPeriod(revenues,expenses){
- let revenueHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0;
- for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;}
- for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
- const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*.2575),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
- return {revenueHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,reserved:vatNet+urssafReserve};
+ let revenueHt=0,commissionAdvisorHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0,taxPaid=0;
+ for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;if(r.category==='Commission immobilière')commissionAdvisorHt+=p.ht;}
+ for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;if(provision==='tax')taxPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
+ const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*URSSAF_RATE),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
+ const taxBase=Math.max(0,commissionAdvisorHt-Math.round(commissionAdvisorHt*URSSAF_RATE)),taxGenerated=Math.round(taxBase*INCOME_TAX_RATE),taxReserve=Math.max(0,taxGenerated-taxPaid);
+ return {revenueHt,commissionAdvisorHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,taxBase,taxGenerated,taxPaid,taxReserve,reserved:vatNet+urssafReserve+taxReserve};
 }
 
 function validMonth(value){return typeof value==='string'&&/^\d{4}-\d{2}$/.test(value)&&date(value+'-01');}
@@ -204,7 +212,8 @@ export function dashboardSummary(d,asOf){
  const revenues=(d.revenues||[]).filter(r=>!r.cancelled&&r.day<=asOf);
  const annualExpenses=expenses.filter(r=>r.day.slice(0,4)===String(year));
  const annualRevenues=revenues.filter(r=>r.day.slice(0,4)===String(year));
- const total=annualExpenses.reduce((s,r)=>s+r.cents,0),revenueTotal=annualRevenues.filter(r=>r.category==='Commission immobilière').reduce((s,r)=>s+r.cents,0);
+ const initialRevenue=d.setup?.initialRevenueCents||0;
+ const total=annualExpenses.reduce((s,r)=>s+r.cents,0),revenueTotal=initialRevenue+annualRevenues.filter(r=>r.category==='Commission immobilière').reduce((s,r)=>s+r.cents,0);
  const finance=financeSummary(d,year,asOf);
  const balance=d.setup?d.setup.balance+revenues.reduce((s,r)=>s+r.cents,0)-expenses.filter(r=>!r.historical).reduce((s,r)=>s+r.cents,0):null;
  return {annualExpenses,annualRevenues,total,revenueTotal,cashflow:revenueTotal-total,finance,balance,freeCash:balance===null?null:balance-finance.reserved};
