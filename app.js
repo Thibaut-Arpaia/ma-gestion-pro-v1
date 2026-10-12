@@ -1,5 +1,4 @@
-import {vatFromTtc,splitVat} from './vat.mjs';
-import {money,calcCommission,commissionSummary,dashboardSummary,duplicateCandidates,duplicateGroups,financeSummary,pendingBankControls,periodReport} from './model.mjs';
+import {vatFromTtc,splitVat,money,calcCommission,commissionSummary,dashboardSummary,duplicateCandidates,duplicateGroups,financeSummary,pendingBankControls,periodReport} from './model.mjs';
 import {missingReceipts,validateReceipt,receiptLimit} from './receipts.mjs';
 import {bankRows} from './reconciliation.mjs';
 import {initReconciliation} from './reconciliation-ui.mjs';

@@ -91,4 +91,8 @@ Si une demande ou une manipulation risque de casser les données, le workflow, l
 
 Recettes : taux en %, commission immobilière fixée à 20 %. Dépenses : taux principal en % et taux supplémentaires avec leurs montants TTC. Le TTC restant est affecté au taux principal. Calcul par ligne : HT = TTC / (1 + taux / 100), arrondi au centime, puis TVA = TTC − HT. Le taux et les bases sont conservés lors de la réouverture des nouvelles saisies. Les anciennes saisies conservent leur TVA sans déduire un taux non connu ; renseigner les taux et leurs TTC pour les recalculer.
 
-Le fichier vat.mjs est requis dans la publication. Le workflow GitHub Pages est inclus. Vérifications : 70 tests automatisés, dont plusieurs taux, tickets mixtes, arrondis, sauvegarde/réouverture et modification.
+Les calculs TVA sont intégrés à model.mjs, déjà copié par le workflow GitHub Pages existant. Aucun nouveau module de publication n’est requis. Le workflow GitHub Pages est inclus. Vérifications : 70 tests automatisés, dont plusieurs taux, tickets mixtes, arrondis, sauvegarde/réouverture et modification.
+
+## Vérification de compatibilité du ZIP
+
+Avant livraison, extraire le ZIP dans un dossier vide et exécuter exactement les blocs de commandes du workflow actuellement présent sur GitHub. Vérifier les dépendances dans le dossier public reconstruit. Les tests seuls ne suffisent pas : un module présent dans le dépôt peut être oublié par la liste de copie du workflow.

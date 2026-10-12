@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {vatFromTtc,splitVat} from '../vat.mjs';
+import {vatFromTtc,splitVat} from '../model.mjs';
 import {empty,change,validate,financeSummary} from '../model.mjs';
 test('TVA depuis TTC : taux usuels, virgule et arrondis',()=>{
  for(const [ttc,rate,expected] of [[12000,20,2000],[11000,10,1000],[10550,'5,5',550],[10210,2.1,210],[10000,0,0],[4250,20,708],[999,5.5,52]])assert.equal(vatFromTtc(ttc,rate),expected);
