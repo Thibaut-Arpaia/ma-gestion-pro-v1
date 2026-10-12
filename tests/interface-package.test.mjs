@@ -35,6 +35,20 @@ test('V4.3 : Reset calculatrice, autocomplete et retour dashboard restent cadré
  assert.match(css,/\.bank-summary \+ \.bank-import\{margin-top:20px\}/);
 });
 
+test('Calculatrice : affichage simplifié avec TVA et URSSAF en sortie visuelle',async()=>{
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(app,/function resultRow\(label,value,highlight=false,negative=false\)/);
+ assert.match(app,/negative\?'- ':'/);
+ assert.match(app,/resultRow\('TVA collectée',r\.advisorVat,false,true\)/);
+ assert.match(app,/resultRow\('URSSAF',r\.urssaf,false,true\)/);
+ assert.match(app,/resultRow\('Commission agence HT',r\.agencyHt\),resultRow\('Commission conseiller TTC',r\.advisorTtc\),resultRow\('TVA collectée',r\.advisorVat,false,true\),resultRow\('Commission conseiller HT',r\.advisorHt,true\),resultRow\('URSSAF',r\.urssaf,false,true\),resultRow\('Net estimé après TVA et URSSAF',r\.net,true\)/);
+ assert.doesNotMatch(app,/Base personnelle HT simulée/);
+ assert.doesNotMatch(app,/Cumul personnel HT avant simulation/);
+ assert.doesNotMatch(app,/Cumul personnel HT après simulation/);
+ assert.match(css,/\.result-row\.negative strong\{color:#e24b4b\}/);
+});
+
 test('V4 : le fond d’écran est personnalisable sans modifier l’interface',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const app=await readFile(path.join(root,'app.js'),'utf8');
