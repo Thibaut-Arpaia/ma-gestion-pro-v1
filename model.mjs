@@ -1,4 +1,4 @@
-import {validateReceipts,updateReceipt} from './receipts.mjs';
+import {validateReceipt,validateReceipts,updateReceipt} from './receipts.mjs';
 import {validateBank,bankChange,protectClosures} from './reconciliation.mjs';
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
 export const URSSAF_RATE=.256;

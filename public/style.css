@@ -586,6 +586,7 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  padding:18px;
  backdrop-filter:blur(8px);
 }
+.bank-summary + .bank-import{margin-top:20px}
 .bank-table-wrap{
  margin-top:18px;
  border:1px solid #c5d7e5;

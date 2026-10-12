@@ -8,7 +8,7 @@ const root=path.resolve(import.meta.dirname,'..');
 test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/V4\.3 · URSSAF complète · factures recettes/);
+ assert.match(html,/V 4\.3/);
  assert.match(html,/class="muted version-note"/);
  assert.doesNotMatch(html,/class="dashboard-title"/);
  assert.doesNotMatch(html,/class="scope"/);
@@ -18,6 +18,21 @@ test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  await access(path.join(root,'assets','dashboard-visual-v2.png'));
  await access(path.join(root,'assets','dashboard-background-v3.png'));
  await access(path.join(root,'assets','crowd-applause-and-cheering-237756-5s.mp3'));
+});
+
+test('V4.3 : Reset calculatrice, autocomplete et retour dashboard restent cadrés',async()=>{
+ const html=await readFile(path.join(root,'index.html'),'utf8');
+ const app=await readFile(path.join(root,'app.js'),'utf8');
+ const bank=await readFile(path.join(root,'reconciliation-ui.mjs'),'utf8');
+ const css=await readFile(path.join(root,'style.css'),'utf8');
+ assert.match(html,/id="commission-reset">Reset/);
+ assert.match(html,/id="dash-commission-reset">Reset/);
+ assert.match(html,/id="commission-form" class="panel" autocomplete="off"/);
+ assert.match(html,/id="dash-commission-form" autocomplete="off"/);
+ assert.match(app,/function resetCommissionForm\(form,host,compact=false\)\{form\.reset\(\);form\.elements\.share\.value='100';host\.replaceChildren\(\)/);
+ assert.match(app,/window\.addEventListener\('popstate',\(\)=>view\('dashboard',false\)\)/);
+ assert.match(bank,/autocomplete="off"/);
+ assert.match(css,/\.bank-summary \+ \.bank-import\{margin-top:20px\}/);
 });
 
 test('V4 : le fond d’écran est personnalisable sans modifier l’interface',async()=>{
