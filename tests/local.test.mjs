@@ -67,7 +67,7 @@ test('Recettes : création, modification, suppression et validation',()=>{
  d=change(d,'removeRevenue',1);assert.equal(d.revenues[0].cancelled,true);
  assert.throws(()=>change(d,'saveRevenue',{...revenue,amount:'0'}));
  assert.throws(()=>change(d,'saveRevenue',{...revenue,label:''}));
- assert.throws(()=>change(d,'saveRevenue',{...revenue,vat:'14000'}));
+ assert.equal(change(d,'saveRevenue',{...revenue,vat:'14000'}).revenues.at(-1).vat_cents,200000);
 });
 test('Calculatrice commission : agence TTC en simulation, recettes conseiller TTC en historique',()=>{
  let r=calcCommission({agencyTtc:'20000',share:'100',previousHt:'0'});
@@ -76,8 +76,8 @@ test('Calculatrice commission : agence TTC en simulation, recettes conseiller TT
  assert.equal(r.advisorHt,1166667);
  assert.equal(r.advisorVat,233333);
  assert.equal(r.advisorTtc,1400000);
- assert.equal(r.urssaf,298667);
- assert.equal(r.net,868000);
+ assert.equal(r.urssaf,300300);
+ assert.equal(r.net,866367);
  r=calcCommission({agencyTtc:'20000',share:'50',previousHt:'0'});
  assert.equal(r.personalBaseHt,833334);
  assert.equal(r.advisorTtc,700001);
@@ -144,19 +144,19 @@ test('Dashboard : TVA nette, réserve URSSAF et argent réellement libre',()=>{
  assert.equal(f.vatCollected,233333);
  assert.equal(f.vatDeductible,2000);
  assert.equal(f.vatNet,231333);
- assert.equal(f.urssafGenerated,298667);
- assert.equal(f.urssafReserve,298667);
- assert.equal(f.taxBase,868000);
- assert.equal(f.taxReserve,86800);
- assert.equal(f.reserved,616800);
+ assert.equal(f.urssafGenerated,300300);
+ assert.equal(f.urssafReserve,300300);
+ assert.equal(f.taxBase,866367);
+ assert.equal(f.taxReserve,86637);
+ assert.equal(f.reserved,618270);
  d=change(d,'save',{...expense,day:'2026-09-22',amount:'1000',vat:'0',category:'TVA reversée'});
  d=change(d,'save',{...expense,day:'2026-09-23',amount:'500',vat:'0',category:'Cotisations URSSAF'});
  f=financeSummary(d,2026);
  assert.equal(f.vatPaid,100000);
  assert.equal(f.urssafPaid,50000);
  assert.equal(f.vatNet,131333);
- assert.equal(f.urssafReserve,248667);
- assert.equal(f.reserved,466800);
+ assert.equal(f.urssafReserve,250300);
+ assert.equal(f.reserved,468270);
 });
 test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=>{
  let d=change(empty(),'setup',setup);
@@ -168,7 +168,7 @@ test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=
  assert.equal(f.vatPaid,100000);
  assert.equal(f.urssafPaid,50000);
  assert.equal(f.vatNet,131333);
- assert.equal(f.urssafReserve,248667);
+ assert.equal(f.urssafReserve,250300);
  d=change(d,'save',{...expense,day:'2026-09-24',amount:'100',vat:'0',category:'TVA payée'});
  d=change(d,'save',{...expense,day:'2026-09-25',amount:'50',vat:'0',category:'Paiement URSSAF'});
  f=financeSummary(d,2026);
@@ -182,7 +182,7 @@ test('Dashboard : paiements TVA/URSSAF reconnus malgré variantes de saisie',()=
  d=change(d,'save',{...expense,day:'2026-09-28',amount:'2000',vat:'333.33',category:'virement personnel'});
  f=financeSummary(d,2026);
  assert.equal(f.vatDeductible,2000);
- assert.equal(f.reserved,446800);
+ assert.equal(f.reserved,448270);
 });
 test('Module TVA/URSSAF : paiements guidés sans TVA ni justificatif obligatoire',()=>{
  let d=change(empty(),'setup',setup);
@@ -199,8 +199,8 @@ test('Module TVA/URSSAF : paiements guidés sans TVA ni justificatif obligatoire
  assert.equal(f.urssafPaid,50000);
  assert.equal(f.taxPaid,10000);
  assert.equal(f.vatNet,133333);
- assert.equal(f.urssafReserve,248667);
- assert.equal(f.taxReserve,76800);
+ assert.equal(f.urssafReserve,250300);
+ assert.equal(f.taxReserve,76637);
 });
 test('Audit calculs : recettes modifiées/supprimées et provisions ignorées correctement',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1'});
@@ -212,9 +212,9 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.vatCollected,253333);
  assert.equal(f.vatDeductible,2000);
  assert.equal(f.vatNet,251333);
- assert.equal(f.urssafGenerated,324267);
- assert.equal(f.taxReserve,86800);
- assert.equal(f.reserved,662400);
+ assert.equal(f.urssafGenerated,326040);
+ assert.equal(f.taxReserve,86637);
+ assert.equal(f.reserved,664010);
  d=change(d,'saveRevenue',{day:'2026-01-10',amount:'28000',vat:'0',label:'Commission A modifiée',category:'Commission immobilière',notes:'',id:1});
  let s=commissionSummary(d.revenues,2026);
  assert.equal(s.baseHt,3333333);
@@ -224,8 +224,8 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.revenueHt,2433333);
  assert.equal(f.vatCollected,486667);
  assert.equal(f.vatNet,484667);
- assert.equal(f.urssafGenerated,622933);
- assert.equal(f.taxReserve,173600);
+ assert.equal(f.urssafGenerated,626340);
+ assert.equal(f.taxReserve,173273);
  d=change(d,'removeRevenue',1);
  s=commissionSummary(d.revenues,2026);
  assert.equal(s.count,0);
@@ -234,7 +234,7 @@ test('Audit calculs : recettes modifiées/supprimées et provisions ignorées co
  assert.equal(f.revenueHt,100000);
  assert.equal(f.vatCollected,20000);
  assert.equal(f.vatNet,18000);
- assert.equal(f.urssafGenerated,25600);
+ assert.equal(f.urssafGenerated,25740);
  assert.equal(f.taxReserve,0);
 });
 test('Dashboard : chiffre d’affaires limité aux commissions immobilières',()=>{
@@ -261,10 +261,10 @@ test('Point de départ : CA initial et cumul PP HT restent découplés du compte
 });
 test('Audit calculs : arrondis commission aux paliers validés',()=>{
  const exact=[
-  {previousHt:'33333.34',agencyTtc:'20000',share:'100',advisorTtc:1466000,advisorHt:1221667,urssaf:312747,net:908920,nextHt:5000001},
-  {previousHt:'33333.34',agencyTtc:'20000',share:'50',advisorTtc:716000,advisorHt:596667,urssaf:152747,net:443920,nextHt:4166668},
-  {previousHt:'0',agencyTtc:'20000',share:'100',advisorTtc:1400000,advisorHt:1166667,urssaf:298667,net:868000,nextHt:1666667},
-  {previousHt:'0',agencyTtc:'20000',share:'50',advisorTtc:700001,advisorHt:583334,urssaf:149334,net:434000,nextHt:833334}
+  {previousHt:'33333.34',agencyTtc:'20000',share:'100',advisorTtc:1466000,advisorHt:1221667,urssaf:314457,net:907210,nextHt:5000001},
+  {previousHt:'33333.34',agencyTtc:'20000',share:'50',advisorTtc:716000,advisorHt:596667,urssaf:153582,net:443085,nextHt:4166668},
+  {previousHt:'0',agencyTtc:'20000',share:'100',advisorTtc:1400000,advisorHt:1166667,urssaf:300300,net:866367,nextHt:1666667},
+  {previousHt:'0',agencyTtc:'20000',share:'50',advisorTtc:700001,advisorHt:583334,urssaf:150150,net:433184,nextHt:833334}
  ];
  for(const c of exact){const r=calcCommission(c);assert.equal(r.advisorTtc,c.advisorTtc);assert.equal(r.advisorHt,c.advisorHt);assert.equal(r.urssaf,c.urssaf);assert.equal(r.net,c.net);assert.equal(r.nextHt,c.nextHt);}
 });

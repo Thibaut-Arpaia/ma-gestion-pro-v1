@@ -677,6 +677,9 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  grid-template-columns:repeat(3,minmax(0,1fr));
  gap:20px;
 }
+.fiscal-shortcut{cursor:pointer}
+.fiscal-shortcut:hover{transform:translateY(-2px);border-color:#1682ee;box-shadow:0 18px 45px #1682ee22}
+#fiscal .panel+section.panel{margin-top:22px}
 .fiscal-payments form{
  padding:16px;
  border:1px solid #c5d7e5;

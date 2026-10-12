@@ -8,7 +8,7 @@ const root=path.resolve(import.meta.dirname,'..');
 test('Interface V3 : visuel validé et ressources locales présentes',async()=>{
  const html=await readFile(path.join(root,'index.html'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(html,/V4\.2 test · TVA\/URSSAF · justificatifs dossier/);
+ assert.match(html,/V4\.3 · URSSAF complète · factures recettes/);
  assert.match(html,/class="muted version-note"/);
  assert.doesNotMatch(html,/class="dashboard-title"/);
  assert.doesNotMatch(html,/class="scope"/);

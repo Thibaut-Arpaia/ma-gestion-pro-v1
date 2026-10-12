@@ -2,6 +2,7 @@ import {validateReceipts,updateReceipt} from './receipts.mjs';
 import {validateBank,bankChange,protectClosures} from './reconciliation.mjs';
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
 export const URSSAF_RATE=.256;
+export const URSSAF_TOTAL_RATE=.2574;
 export const INCOME_TAX_RATE=.10;
 export function money(v){if(!['string','number'].includes(typeof v))throw Error('Montant invalide.');const s=String(v).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(s))throw Error('Deux décimales au maximum.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||Math.abs(n)>1e11)throw Error('Montant hors limite.');return n;}
 export const commissionBrackets=[{to:3900000,rate:.70},{to:5900000,rate:.75},{to:7500000,rate:.80},{to:9000000,rate:.85},{to:Infinity,rate:.90}];
@@ -20,7 +21,7 @@ export function calcCommission(input){
  const vatRate=0.20,agencyHt=Math.round(agencyTtc/(1+vatRate)),personalBaseHt=Math.round(agencyHt*share/100);
  let remaining=personalBaseHt,position=previousHt,advisorHt=0;
  for(const b of commissionBrackets){if(remaining<=0)break;const room=b.to===Infinity?remaining:Math.max(0,b.to-position);const slice=Math.min(remaining,room);advisorHt+=Math.round(slice*b.rate);remaining-=slice;position+=slice;}
- const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*URSSAF_RATE),net=advisorHt-urssaf;
+ const advisorVat=Math.round(advisorHt*vatRate),advisorTtc=advisorHt+advisorVat,urssaf=Math.round(advisorHt*URSSAF_TOTAL_RATE),net=advisorHt-urssaf;
  return {agencyTtc,agencyHt,share,previousHt,personalBaseHt,nextHt:previousHt+personalBaseHt,advisorHt,advisorVat,advisorTtc,urssaf,net};
 }
 export function commissionSummary(revenues,year,initialBaseHt=0){
@@ -46,8 +47,8 @@ export function financeSummary(d,year,asOf=`${year}-12-31`){
  let revenueHt=0,commissionAdvisorHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0,taxPaid=0;
  for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;if(r.category==='Commission immobilière')commissionAdvisorHt+=p.ht;}
  for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;if(provision==='tax')taxPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
- const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*URSSAF_RATE),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
- const taxBase=Math.max(0,commissionAdvisorHt-Math.round(commissionAdvisorHt*URSSAF_RATE)),taxGenerated=Math.round(taxBase*INCOME_TAX_RATE),taxReserve=Math.max(0,taxGenerated-taxPaid);
+ const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*URSSAF_TOTAL_RATE),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
+ const taxBase=Math.max(0,commissionAdvisorHt-Math.round(commissionAdvisorHt*URSSAF_TOTAL_RATE)),taxGenerated=Math.round(taxBase*INCOME_TAX_RATE),taxReserve=Math.max(0,taxGenerated-taxPaid);
  return {revenueHt,commissionAdvisorHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,taxBase,taxGenerated,taxPaid,taxReserve,reserved:vatNet+urssafReserve+taxReserve};
 }
 export function date(s){const d=new Date(`${s}T12:00:00Z`);return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
@@ -77,6 +78,7 @@ export function validate(d){
  ids.add(r.id);if(r.ref!==null){if(!integer(r.ref)||r.ref<1||(r.historical?r.ref>=d.setup.first:r.ref<d.setup.first))throw Error('Numérotation incohérente.');if(!r.cancelled){if(refs.has(r.ref)||r.ref>=d.next)throw Error('Numérotation incohérente.');refs.add(r.ref);}}else if(!r.historical&&!r.cancelled)throw Error('Référence manquante.');
  }const revenueIds=new Set();for(const r of d.revenues){
  if(!r||!Number.isSafeInteger(r.id)||r.id<1||revenueIds.has(r.id)||!date(r.day)||typeof r.label!=='string'||!r.label.trim()||r.label.length>200||typeof r.category!=='string'||!r.category.trim()||r.category.length>80||!integer(r.cents)||r.cents<=0||!integer(r.vat_cents)||r.vat_cents<0||r.vat_cents>r.cents||typeof r.notes!=='string'||r.notes.length>1000||typeof r.cancelled!=='boolean')throw Error('Une recette du fichier est invalide.');
+ if(r.invoice!==undefined)validateReceipt(r.invoice);
  revenueIds.add(r.id);
  }return d;
 }
@@ -90,9 +92,10 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  }else if(action==='remove'){const r=d.expenses.find(r=>r.id===p&&!r.cancelled);if(!r)throw Error('Dépense introuvable.');r.cancelled=true;}
  else if(action==='saveRevenue'){
  if(!d.setup)throw Error('Enregistre ton point de départ dans Réglages.');
- const v={day:p.day,label:String(p.label||'').trim(),category:String(p.category||'').trim(),cents:money(p.amount),vat_cents:money(p.vat||'0'),notes:String(p.notes||'').trim()};
- if(p.id){const old=d.revenues.find(r=>r.id===p.id&&!r.cancelled);if(!old)throw Error('Recette introuvable.');Object.assign(old,v);}
- else{const id=d.revenues.reduce((m,r)=>Math.max(m,r.id),0)+1;d.revenues.push({...v,id,cancelled:false});}
+ const cents=money(p.amount),category=String(p.category||'').trim();
+ const v={day:p.day,label:String(p.label||'').trim(),category,cents,vat_cents:category==='Commission immobilière'?cents-Math.round(cents/1.2):money(p.vat||'0'),notes:String(p.notes||'').trim()};
+ if(p.id){const old=d.revenues.find(r=>r.id===p.id&&!r.cancelled);if(!old)throw Error('Recette introuvable.');Object.assign(old,v);if(p.invoice)old.invoice=p.invoice;}
+ else{const id=d.revenues.reduce((m,r)=>Math.max(m,r.id),0)+1;d.revenues.push({...v,id,cancelled:false,...(p.invoice?{invoice:p.invoice}:{})});}
  }else if(action==='removeRevenue'){const r=d.revenues.find(r=>r.id===p&&!r.cancelled);if(!r)throw Error('Recette introuvable.');r.cancelled=true;}
  else if(action==='restoreReceipt'){
  const row=d.expenses.find(r=>r.id===p.id&&!r.cancelled),index=p.index;
@@ -157,8 +160,8 @@ function fiscalPeriod(revenues,expenses){
  let revenueHt=0,commissionAdvisorHt=0,vatCollected=0,vatDeductible=0,vatPaid=0,urssafPaid=0,taxPaid=0;
  for(const r of revenues){const p=revenueParts(r);revenueHt+=p.ht;vatCollected+=p.vat;if(r.category==='Commission immobilière')commissionAdvisorHt+=p.ht;}
  for(const r of expenses){const provision=provisionKind(r.category);if(provision){if(provision==='vat')vatPaid+=r.cents;if(provision==='urssaf')urssafPaid+=r.cents;if(provision==='tax')taxPaid+=r.cents;continue;}vatDeductible+=r.vat_cents;}
- const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*URSSAF_RATE),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
- const taxBase=Math.max(0,commissionAdvisorHt-Math.round(commissionAdvisorHt*URSSAF_RATE)),taxGenerated=Math.round(taxBase*INCOME_TAX_RATE),taxReserve=Math.max(0,taxGenerated-taxPaid);
+ const vatNet=Math.max(0,vatCollected-vatDeductible-vatPaid),urssafGenerated=Math.round(revenueHt*URSSAF_TOTAL_RATE),urssafReserve=Math.max(0,urssafGenerated-urssafPaid);
+ const taxBase=Math.max(0,commissionAdvisorHt-Math.round(commissionAdvisorHt*URSSAF_TOTAL_RATE)),taxGenerated=Math.round(taxBase*INCOME_TAX_RATE),taxReserve=Math.max(0,taxGenerated-taxPaid);
  return {revenueHt,commissionAdvisorHt,vatCollected,vatDeductible,vatPaid,vatNet,urssafGenerated,urssafPaid,urssafReserve,taxBase,taxGenerated,taxPaid,taxReserve,reserved:vatNet+urssafReserve+taxReserve};
 }
 

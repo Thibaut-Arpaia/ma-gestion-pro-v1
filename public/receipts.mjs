@@ -7,7 +7,7 @@ export function validateReceipt(r){
   const prefix=r.type==='application/pdf'?'JVBERi0':r.type==='image/png'?'iVBORw0KGgo':'/9j/';
   if(!r.data.startsWith(prefix))throw Error('Le contenu du justificatif ne correspond pas à son format.');
  }
- if(r.path!==undefined&&(typeof r.path!=='string'||!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(r.path)))throw Error('Chemin du justificatif invalide.');
+ if(r.path!==undefined&&(typeof r.path!=='string'||!/^[A-Za-z0-9_.-]+(\/[A-Za-z0-9_.-]+)+$/.test(r.path)))throw Error('Chemin du justificatif invalide.');
  if(r.data===undefined&&r.path===undefined)throw Error('Justificatif invalide (JPEG, PNG ou PDF, 5 Mo maximum).');
  return r;
 }
