@@ -38,15 +38,27 @@ test('V4.3 : Reset calculatrice, autocomplete et retour dashboard restent cadré
 test('Calculatrice : affichage simplifié avec TVA et URSSAF en sortie visuelle',async()=>{
  const app=await readFile(path.join(root,'app.js'),'utf8');
  const css=await readFile(path.join(root,'style.css'),'utf8');
- assert.match(app,/function resultRow\(label,value,highlight=false,negative=false\)/);
+ assert.match(app,/function resultRow\(label,value,highlight=false,negative=false,tone=''\)/);
  assert.match(app,/negative\?'- ':'/);
- assert.match(app,/resultRow\('TVA collectée',r\.advisorVat,false,true\)/);
- assert.match(app,/resultRow\('URSSAF',r\.urssaf,false,true\)/);
- assert.match(app,/resultRow\('Commission agence HT',r\.agencyHt\),resultRow\('Commission conseiller TTC',r\.advisorTtc\),resultRow\('TVA collectée',r\.advisorVat,false,true\),resultRow\('Commission conseiller HT',r\.advisorHt,true\),resultRow\('URSSAF',r\.urssaf,false,true\),resultRow\('Net estimé après TVA et URSSAF',r\.net,true\)/);
+ assert.match(app,/resultRow\('TVA collectée',r\.advisorVat,false,true,'negative-vat'\)/);
+ assert.match(app,/resultRow\('URSSAF',r\.urssaf,false,true,'negative-urssaf'\)/);
+ assert.match(app,/resultRow\('Commission agence HT',r\.agencyHt\),resultRow\('Commission conseiller TTC',r\.advisorTtc\),resultRow\('TVA collectée',r\.advisorVat,false,true,'negative-vat'\),resultRow\('Commission conseiller HT',r\.advisorHt,true\),resultRow\('URSSAF',r\.urssaf,false,true,'negative-urssaf'\),resultRow\('Net après TVA et URSSAF',r\.net,true\)/);
  assert.doesNotMatch(app,/Base personnelle HT simulée/);
  assert.doesNotMatch(app,/Cumul personnel HT avant simulation/);
  assert.doesNotMatch(app,/Cumul personnel HT après simulation/);
- assert.match(css,/\.result-row\.negative strong\{color:#e24b4b\}/);
+ assert.match(css,/\.result-row\.negative-vat strong\{color:#f0a923\}/);
+ assert.match(css,/\.result-row\.negative-urssaf strong\{color:#d83be8\}/);
+ assert.match(css,/\.vat-card \.panel-head h2,\.vat-card \.panel-head \.cyan,\.vat-card \.result-row\.highlight strong\{color:#f0a923\}/);
+ assert.match(css,/\.urssaf-card \.panel-head h2,\.urssaf-card \.panel-head \.cyan,\.urssaf-card \.result-row\.highlight strong\{color:#d83be8\}/);
+ assert.match(css,/\.tax-card \.panel-head h2,\.tax-card \.panel-head \.cyan,\.tax-card \.result-row\.highlight strong\{color:#6d7cff\}/);
+});
+
+test('Rapprochement : solde et écart reprennent les couleurs des opérations',async()=>{
+ const bank=await readFile(path.join(root,'reconciliation-ui.mjs'),'utf8');
+ assert.match(bank,/function bankAmount\(cents\)\{return cents<0\?'- '\+fmt\.format\(Math\.abs\(cents\)\/100\):fmt\.format\(cents\/100\);\}/);
+ assert.match(bank,/function colorAmount\(el,cents,match=false\)/);
+ assert.match(bank,/\$\('#bank-expected'\)\.textContent=bankAmount\(summary\.expected\);colorAmount\(\$\('#bank-expected'\),summary\.expected\)/);
+ assert.match(bank,/bankAmount\(difference\);colorAmount\(\$\('#bank-difference'\),difference\|\|0,actual===summary\.expected\)/);
 });
 
 test('V4 : le fond d’écran est personnalisable sans modifier l’interface',async()=>{

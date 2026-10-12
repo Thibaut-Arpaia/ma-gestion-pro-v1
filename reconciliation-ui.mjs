@@ -19,13 +19,15 @@ export function initReconciliation({getState,save,notify,fmt,today}){
  $('#bank-apply-csv').onclick=()=>{if(!importedEntries.length)return;mutate('autoClearBank',{entries:importedEntries});};
  $('#bank-close').onclick=()=>{if(window.confirm('Clôturer les opérations jusqu’au '+end.value+' ? Les montants et pointages seront verrouillés.'))mutate('closeBank',{end:end.value,balance:balance.value});};
  $('#bank-reopen').onclick=()=>{if(window.confirm('Rouvrir la dernière clôture pour modifier cette période ?'))mutate('reopenBank',{});};
+ function bankAmount(cents){return cents<0?'- '+fmt.format(Math.abs(cents)/100):fmt.format(cents/100);}
+ function colorAmount(el,cents,match=false){el.classList.toggle('bank-income',cents>0);el.classList.toggle('bank-expense',cents<0);el.classList.toggle('bank-match',match);}
  function renderSummary(){const d=getState();const button=$('#bank-close');button.disabled=true;$('#bank-reopen').hidden=!d?.bankClosures?.length;$('#bank-reopen').disabled=busy;
  const closures=d?.bankClosures||[];$('#bank-closed').textContent=closures.length?'Dernière clôture : '+closures.at(-1).end+' · '+fmt.format(closures.at(-1).bankBalance/100):'Aucune période clôturée.';
- if(!d?.setup){$('#bank-expected').textContent='—';$('#bank-difference').textContent='—';$('#bank-pending').textContent='Ouvre ton dossier et configure son point de départ.';return;}
- try{const summary=bankSummary(d,end.value);$('#bank-cutoff').textContent=end.value.split('-').reverse().join('/');$('#bank-expected').textContent=fmt.format(summary.expected/100);$('#bank-pending').textContent=summary.pending+' opération(s) à pointer jusqu’à cette date, y compris les mois précédents.';
+ if(!d?.setup){$('#bank-expected').textContent='—';$('#bank-difference').textContent='—';colorAmount($('#bank-expected'),0);colorAmount($('#bank-difference'),0);$('#bank-pending').textContent='Ouvre ton dossier et configure son point de départ.';return;}
+ try{const summary=bankSummary(d,end.value);$('#bank-cutoff').textContent=end.value.split('-').reverse().join('/');$('#bank-expected').textContent=bankAmount(summary.expected);colorAmount($('#bank-expected'),summary.expected);$('#bank-pending').textContent=summary.pending+' opération(s) à pointer jusqu’à cette date, y compris les mois précédents.';
  const raw=balance.value.replace(/[\s\u00a0\u202f]/g,'').replace(',','.');const actual=/^-?\d+(\.\d{1,2})?$/.test(raw)?Math.round(Number(raw)*100):null;
- $('#bank-difference').textContent=actual===null?'—':fmt.format((actual-summary.expected)/100);$('#bank-difference').classList.toggle('bank-match',actual===summary.expected);button.disabled=busy||actual===null||actual!==summary.expected||summary.pending>0||closures.some(c=>c.end>=end.value)||!from.value||from.value>end.value;
- }catch(e){$('#bank-expected').textContent='—';$('#bank-difference').textContent='—';$('#bank-pending').textContent=e.message;}}
+ const difference=actual===null?null:actual-summary.expected;$('#bank-difference').textContent=difference===null?'—':bankAmount(difference);colorAmount($('#bank-difference'),difference||0,actual===summary.expected);button.disabled=busy||actual===null||actual!==summary.expected||summary.pending>0||closures.some(c=>c.end>=end.value)||!from.value||from.value>end.value;
+ }catch(e){$('#bank-expected').textContent='—';$('#bank-difference').textContent='—';colorAmount($('#bank-expected'),0);colorAmount($('#bank-difference'),0);$('#bank-pending').textContent=e.message;}}
  function render(){renderSummary();const host=$('#bank-rows');host.replaceChildren();const d=getState();if(!d?.setup)return;
  refreshImportStatus();
  const cutoff=d.bankClosures?.at(-1)?.end,kind=$('#bank-kind').value,status=$('#bank-status').value;
