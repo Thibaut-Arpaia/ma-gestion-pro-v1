@@ -1,3 +1,4 @@
+import {splitVat,vatFromTtc} from './vat.mjs';
 import {validateReceipt,validateReceipts,updateReceipt} from './receipts.mjs';
 import {validateBank,bankChange,protectClosures} from './reconciliation.mjs';
 export const payments=['Carte pro','Prélèvement','Virement','Espèces','Autre'];
@@ -86,7 +87,7 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  if(action==='setup'){if(d.setup)throw Error('Le point de départ est déjà enregistré.');const n=Number(p.next);if(!date(p.day)||!integer(n)||n<1)throw Error('Date ou premier numéro invalide.');d.setup={day:p.day,balance:money(p.balance),first:n,initialRevenueCents:money(p.initialRevenue||'0'),initialPpBaseHt:money(p.initialPpBaseHt||'0')};d.next=n;}
  else if(action==='save'){
  if(!d.setup)throw Error('Enregistre ton point de départ dans Réglages.');
- const v={day:p.day,label:String(p.label||'').trim(),category:String(p.category||'').trim(),cents:money(p.amount),vat_cents:money(p.vat||'0'),payment:p.payment,notes:String(p.notes||'').trim()};v.historical=v.day<d.setup.day;
+ const v={day:p.day,label:String(p.label||'').trim(),category:String(p.category||'').trim(),cents:money(p.amount),vat_cents:money(p.vat||'0'),payment:p.payment,notes:String(p.notes||'').trim()};if(p.vat_lines){const lines=p.vat_lines;if(!Array.isArray(lines)||!lines.length||lines.reduce((sum,l)=>sum+l.cents,0)!==v.cents)throw Error('Répartition TTC invalide.');const result=splitVat(v.cents,lines[0].rate,lines.slice(1));v.vat_cents=result.vat;v.vat_lines=result.lines;}v.historical=v.day<d.setup.day;
  if(p.id){const old=d.expenses.find(r=>r.id===p.id&&!r.cancelled);if(!old)throw Error('Dépense introuvable.');if(old.historical!==v.historical)throw Error('La date doit rester du même côté du point de départ. Annule puis recrée cette dépense pour la déplacer.');Object.assign(old,v);}
  else{const ref=v.historical?(p.ref?Number(p.ref):null):null;const id=d.expenses.reduce((m,r)=>Math.max(m,r.id),0)+1;d.expenses.push({...v,ref,id,cancelled:false});}
  }else if(action==='remove'){const r=d.expenses.find(r=>r.id===p&&!r.cancelled);if(!r)throw Error('Dépense introuvable.');r.cancelled=true;}
@@ -94,6 +95,7 @@ export function change(source,action,p){const d=structuredClone(validate(source)
  if(!d.setup)throw Error('Enregistre ton point de départ dans Réglages.');
  const cents=money(p.amount),category=String(p.category||'').trim();
  const v={day:p.day,label:String(p.label||'').trim(),category,cents,vat_cents:category==='Commission immobilière'?cents-Math.round(cents/1.2):money(p.vat||'0'),notes:String(p.notes||'').trim()};
+ if(p.vat_rate!==undefined){v.vat_rate=category==='Commission immobilière'?20:p.vat_rate;v.vat_cents=vatFromTtc(cents,v.vat_rate);}
  if(p.id){const old=d.revenues.find(r=>r.id===p.id&&!r.cancelled);if(!old)throw Error('Recette introuvable.');Object.assign(old,v);if(p.invoice)old.invoice=p.invoice;}
  else{const id=d.revenues.reduce((m,r)=>Math.max(m,r.id),0)+1;d.revenues.push({...v,id,cancelled:false,...(p.invoice?{invoice:p.invoice}:{})});}
  }else if(action==='removeRevenue'){const r=d.revenues.find(r=>r.id===p&&!r.cancelled);if(!r)throw Error('Recette introuvable.');r.cancelled=true;}

@@ -86,3 +86,9 @@ Ne pas livrer un ZIP contenant seulement `public/`. Cette erreur a déjà causé
 Thibaut porte le besoin métier, les retours d’usage et les validations sur son PC. L’assistant porte la méthode de développement : cohérence technique, garde-fous, tests, packaging GitHub et prévention des erreurs déjà rencontrées.
 
 Si une demande ou une manipulation risque de casser les données, le workflow, le packaging ou une décision validée, l’assistant doit le signaler et proposer une option plus sûre avant d’agir.
+
+## Correction TVA en pourcentage — 12 octobre 2026
+
+Recettes : taux en %, commission immobilière fixée à 20 %. Dépenses : taux principal en % et taux supplémentaires avec leurs montants TTC. Le TTC restant est affecté au taux principal. Calcul par ligne : HT = TTC / (1 + taux / 100), arrondi au centime, puis TVA = TTC − HT. Le taux et les bases sont conservés lors de la réouverture des nouvelles saisies. Les anciennes saisies conservent leur TVA sans déduire un taux non connu ; renseigner les taux et leurs TTC pour les recalculer.
+
+Le fichier vat.mjs est requis dans la publication. Le workflow GitHub Pages est inclus. Vérifications : 70 tests automatisés, dont plusieurs taux, tickets mixtes, arrondis, sauvegarde/réouverture et modification.
