@@ -244,14 +244,14 @@ test('Dashboard : chiffre d’affaires limité aux commissions immobilières',()
  d=change(d,'saveRevenue',{day:'2026-02-10',amount:'1200',vat:'200',label:'Remboursement',category:'Autre recette',notes:''});
  d=change(d,'save',{day:'2026-02-11',amount:'120',vat:'20',label:'Restaurant',category:'Restaurant',payment:'Carte pro',notes:''});
  const s=dashboardSummary(d,'2026-12-31');
- assert.equal(s.revenueTotal,1400000);
+ assert.equal(s.revenueTotal,1166667);
  assert.equal(s.balance,1608000);
 });
 test('Point de départ : CA initial et cumul PP HT restent découplés du compte courant',()=>{
  let d=change(empty(),'setup',{day:'2026-01-01',balance:'1000',next:'1',initialRevenue:'9800',initialPpBaseHt:'11666.67'});
  d=change(d,'saveRevenue',{day:'2026-02-01',amount:'14000',vat:'0',label:'Commission A',category:'Commission immobilière',notes:''});
  const dashboard=dashboardSummary(d,'2026-12-31');
- assert.equal(dashboard.revenueTotal,2380000);
+ assert.equal(dashboard.revenueTotal,2146667);
  assert.equal(dashboard.balance,1500000);
  const summary=commissionSummary(d.revenues,2026,d.setup.initialPpBaseHt);
  assert.equal(summary.initialBaseHt,1166667);

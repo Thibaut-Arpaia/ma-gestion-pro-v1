@@ -228,13 +228,13 @@ test('Dashboard : indicateurs renommés et trésorerie masquée',async()=>{
  const model=await readFile(path.join(root,'model.mjs'),'utf8');
  assert.match(html,/Compte courant/);
  assert.match(html,/Chiffre d’affaires/);
- assert.match(html,/CA initial \+ commissions immobilières/);
+ assert.match(html,/CA initial HT \+ commissions immobilières HT/);
  assert.match(html,/Impôts à réserver/);
  assert.match(html,/Compte courant - TVA\/URSSAF\/impôts/);
  assert.doesNotMatch(html,/Solde suivi/);
  assert.doesNotMatch(html,/Recettes de l’année/);
  assert.doesNotMatch(html,/Trésorerie générée/);
- assert.match(model,/initialRevenue\+annualRevenues\.filter\(r=>r\.category==='Commission immobilière'\)\.reduce/);
+ assert.match(model,/annualRevenues\.filter\(r=>r\.category==='Commission immobilière'\)\.reduce\(\(s,r\)=>s\+revenueParts\(r\)\.ht,0\)/);
 });
 
 test('TVA / URSSAF / Impôts : onglet dédié et paiements sécurisés',async()=>{
