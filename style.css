@@ -713,3 +713,14 @@ button.primary:hover{background:linear-gradient(105deg,#57b4ff,#2d9cff)}
  .dashboard-actions button{width:100%}
 }
 @media(max-width:900px){.fiscal-grid,.fiscal-payments{grid-template-columns:1fr}}
+
+/* V4.3 correctif : le dernier onglet ne doit jamais être coupé. */
+@media (min-width:1000px){
+ .topbar{min-height:0}
+ .topbar nav{min-height:0;flex:1 1 auto;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#50779a transparent;overscroll-behavior:contain}
+ .topbar nav button{flex-shrink:0}
+ .topbar .offline{flex:0 0 auto}
+}
+/* Les panneaux de saisie signalent pourquoi l'enregistrement est verrouillé. */
+.setup-required-hint{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 16px;border:1px solid #82a8cd;border-radius:10px;background:#f7fbffed;color:#1c3e5a;font-size:13px}
+.setup-required-hint button{padding:8px 14px;color:white;background:#197fe9;border:0;border-radius:8px;cursor:pointer}
